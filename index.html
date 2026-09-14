@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#090b12" />
+  <title>Chaldea Command — FGO Roster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">C</div>
+        <div>
+          <div class="brand-kicker">CHALDEA</div>
+          <div class="brand-name">COMMAND</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard"><span>Overview</span><small>01</small></button>
+        <button class="nav-item" data-view="roster"><span>Servants</span><small>02</small></button>
+        <button class="nav-item" data-view="compare"><span>Compare</span><small>03</small></button>
+        <button class="nav-item" data-view="todo"><span>Upgrade</span><small>04</small></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sync-state" id="syncState"><span class="dot"></span><span>Local data</span></div>
+        <button class="ghost-button" id="settingsButton">Workspace</button>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu">Menu</button>
+        <div class="breadcrumb"><span>FGO</span><b>/</b><strong id="pageTitle">Overview</strong></div>
+        <div class="top-actions">
+          <div class="player-switcher" id="playerSwitcher"></div>
+          <button class="primary-button" id="editButton">Edit roster</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">COMMAND CENTER</div>
+            <h1>Votre Chaldea,<br><span>sans le tableur.</span></h1>
+            <p>Une vue instantanée de vos Servants, de leur progression et de vos différences de compte.</p>
+          </div>
+          <div class="hero-orbit"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="dashboard-grid">
+          <article class="panel wide">
+            <div class="panel-head">
+              <div><div class="eyebrow">COLLECTION</div><h2>Répartition</h2></div>
+              <span class="panel-note" id="collectionNote"></span>
+            </div>
+            <div class="distribution" id="distribution"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><div class="eyebrow">PROGRESSION</div><h2>Skills</h2></div></div>
+            <div id="skillChart" class="bars"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><div class="eyebrow">PRIORITY</div><h2>À finir</h2></div><button class="text-button" data-view-target="todo">Voir tout</button></div>
+            <div id="priorityList" class="priority-list"></div>
+          </article>
+          <article class="panel wide">
+            <div class="panel-head"><div><div class="eyebrow">HIGHLIGHTS</div><h2>Votre progression</h2></div></div>
+            <div class="highlight-grid" id="highlightGrid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-roster">
+        <div class="section-head">
+          <div><div class="eyebrow">ROSTER</div><h1>Servants</h1><p>Recherche, filtres et édition rapide.</p></div>
+          <div class="roster-controls">
+            <label class="search"><input id="searchInput" type="search" placeholder="Rechercher un Servant…"><span>⌕</span></label>
+            <select id="classFilter"><option value="all">Toutes les classes</option></select>
+            <select id="rarityFilter"><option value="all">Toutes raretés</option><option>SSR</option><option>SR</option><option>R</option><option>UC</option><option>C</option><option>Welfare</option></select>
+            <select id="statusFilter"><option value="all">Tous</option><option value="owned">Possédés</option><option value="missing">Manquants</option><option value="maxed">Maxés</option></select>
+          </div>
+        </div>
+        <div class="roster-meta"><span id="rosterCount"></span><div class="view-toggle"><button class="active" data-roster-view="cards">Cards</button><button data-roster-view="table">Table</button></div></div>
+        <div id="rosterCards" class="roster-grid"></div>
+        <div id="rosterTable" class="table-wrap hidden"></div>
+      </section>
+
+      <section class="view" id="view-compare">
+        <div class="section-head"><div><div class="eyebrow">HEAD TO HEAD</div><h1>Compare</h1><p>Une lecture directe des trois comptes à partir de vos données actuelles.</p></div></div>
+        <div id="compareArea"></div>
+      </section>
+
+      <section class="view" id="view-todo">
+        <div class="section-head"><div><div class="eyebrow">COMMAND PRIORITIES</div><h1>À améliorer</h1><p>Les Servants qui ont encore le plus de marge de progression.</p></div></div>
+        <div class="todo-grid" id="todoGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" id="modal"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
