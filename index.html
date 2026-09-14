@@ -1,102 +1,78 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a0d14" />
-  <meta name="description" content="Chaldea Command — suivi FGO partagé pour trois Masters." />
-  <title>Chaldea Command</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b0e">
+<title>Chaldea Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="noise"></div>
-<div class="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand"><div class="brand-glyph">C</div><div><div class="brand-mini">CHALDEA</div><div class="brand-title">COMMAND</div></div></div>
-    <nav>
-      <button class="nav-item active" data-view="overview"><span>Overview</span><b>01</b></button>
-      <button class="nav-item" data-view="servants"><span>Servants</span><b>02</b></button>
-      <button class="nav-item" data-view="compare"><span>Compare</span><b>03</b></button>
-    </nav>
-    <div class="side-bottom">
-      <div class="sync-pill" id="syncPill"><span class="pulse"></span><span>Mode local</span></div>
-      <button class="side-button" id="accountBtn">Connexion / cloud</button>
+<div class="site-grid"></div><div id="app" class="app">
+<aside class="rail" id="sidebar">
+  <div class="brand"><div class="brand-mark"><span>F</span><i></i></div><div><strong>CHALDEA</strong><small>COMMAND</small></div></div>
+  <div class="rail-section">NAVIGATION</div>
+  <nav class="nav">
+    <button class="nav-item active" data-view="overview"><span class="nav-no">01</span><b>Overview</b><em>O</em></button>
+    <button class="nav-item" data-view="servants"><span class="nav-no">02</span><b>Servants</b><em>S</em></button>
+    <button class="nav-item" data-view="compare"><span class="nav-no">03</span><b>Compare</b><em>C</em></button>
+    <button class="nav-item" data-view="supports"><span class="nav-no">04</span><b>Support Lists</b><em>P</em></button>
+  </nav>
+  <div class="rail-spacer"></div>
+  <div class="connection" id="syncPill"><span></span><div><small>STATUS</small><b>Mode local</b></div></div>
+  <button class="account-link" id="accountBtn">Connexion cloud <span>↗</span></button>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <button class="mobile-menu" id="mobileMenu">☰</button>
+    <div class="crumb"><small>FATE / GRAND ORDER</small><strong id="pageName">Overview</strong></div>
+    <div class="top-right"><div id="masterSwitch" class="master-switch"></div><button id="editRosterBtn" class="top-edit" hidden>Modifier</button></div>
+  </header>
+
+  <section class="view active" id="view-overview">
+    <div class="overview-intro">
+      <div><span class="eyebrow">MASTER PROFILE</span><h1><span id="heroMaster">Julien</span><small>CHALDEA RECORD</small></h1><p>Collection, maîtrise et progression — une lecture instantanée de ton compte.</p></div>
+      <div class="intro-stamp"><span id="introOwned">0</span><small>OWNED SERVANTS</small><div></div><span id="introDate">NA</span></div>
     </div>
-  </aside>
+    <div class="kpi-strip" id="overviewMetrics"></div>
+    <div class="dash-grid">
+      <section class="panel panel-rarity"><div class="panel-title"><div><span class="eyebrow">COLLECTION</span><h2>Raretés possédées</h2></div><span class="micro-note">hors Mash</span></div><div class="rarity-display" id="rarityDisplay"></div></section>
+      <section class="panel panel-skills"><div class="panel-title"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="avg-badge"><strong id="skillsAverage">—</strong><span>/10</span></div></div><div id="skillBars" class="skill-bars"></div></section>
+      <section class="panel panel-detail"><div class="panel-title"><div><span class="eyebrow">DETAIL</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="detail-grid"></div></section>
+      <section class="panel panel-insight"><div class="panel-title"><div><span class="eyebrow">COMMAND LOG</span><h2>Ce qui mérite ton attention</h2></div></div><div id="accountInsight" class="insight-list"></div></section>
+    </div>
+  </section>
 
-  <main class="main">
-    <header class="topbar">
-      <button class="mobile-menu" id="mobileMenu">☰</button>
-      <div class="crumb"><span>FGO</span><i>/</i><strong id="pageName">Overview</strong></div>
-      <div class="top-actions">
-        <div class="master-switch" id="masterSwitch"></div>
-        <button class="button bright" id="editRosterBtn">Modifier</button>
-      </div>
-    </header>
+  <section class="view" id="view-servants">
+    <div class="section-head"><div><span class="eyebrow">ROSTER DATABASE</span><h1>Servants</h1><p>Un catalogue NA vivant, enrichi par Atlas Academy, avec ta progression par-dessus.</p></div><div id="atlasStatus" class="source-chip">ATLAS / NA</div></div>
+    <div class="filters">
+      <label class="searchbox"><span>⌕</span><input id="searchInput" type="search" placeholder="Nom du Servant…" autocomplete="off"></label>
+      <div class="multi-filter" id="classFilterBox"><button class="filter-trigger" data-pop="classPop">Classes <span id="classFilterCount"></span>⌄</button><div class="filter-pop" id="classPop"></div></div>
+      <div class="multi-filter"><button class="filter-trigger" data-pop="rarityPop">Raretés <span id="rarityFilterCount"></span>⌄</button><div class="filter-pop" id="rarityPop"></div></div>
+      <select id="sortFilter"><option value="release">Ordre de sortie</option><option value="bond">Bond level</option><option value="np">NP level</option><option value="level">Niveau</option><option value="rarity-level">Niveau / rareté</option></select>
+      <button class="dir-toggle" id="sortDir">↓ Descendant</button>
+      <div class="view-switch"><button class="active" data-roster-mode="cards">Cards</button><button data-roster-mode="table">Table</button></div>
+    </div>
+    <div class="roster-meta"><span id="rosterCount"></span><span id="rosterSummary" class="roster-summary"></span></div>
+    <div id="rosterCards" class="roster-grid"></div><div id="rosterTable" class="table-container hidden"></div>
+  </section>
 
-    <section class="view active" id="view-overview">
-      <div class="overview-hero">
-        <div class="hero-copy"><div class="kicker">CHALDEA STATUS</div><h1><span id="heroMaster">Julien</span><br>command room</h1><p>Tout votre roster sur une seule vue : collection, puissance, Bond et maîtrise des skills.</p></div>
-        <div class="hero-orb"><div class="orb-core"></div><div class="orb-ring r1"></div><div class="orb-ring r2"></div><span class="orb-dot d1"></span><span class="orb-dot d2"></span><span class="orb-dot d3"></span></div>
-      </div>
+  <section class="view" id="view-compare">
+    <div class="section-head"><div><span class="eyebrow">HEAD TO HEAD</span><h1>Compare</h1><p>Qui est devant sur quoi ? Visualisation directe de vos trois comptes.</p></div></div>
+    <div id="compareTop" class="master-row"></div>
+    <section class="panel showdown"><div class="panel-title showdown-title"><div><span class="eyebrow">SERVANT SHOWDOWN</span><h2 id="compareFocusTitle">Sélectionne un Servant</h2></div><div class="autocomplete"><input id="compareSearch" list="compareNames" type="search" placeholder="Rechercher un Servant…"><datalist id="compareNames"></datalist></div></div><div id="compareCards" class="showdown-grid"></div></section>
+    <section class="panel compare-chart"><div class="panel-title"><div><span class="eyebrow">MASTER RACE</span><h2>Profil de progression</h2></div></div><div id="compareRadar" class="radar-wrap"></div></section>
+  </section>
 
-      <div class="metrics-grid" id="overviewMetrics"></div>
+  <section class="view" id="view-supports">
+    <div class="section-head"><div><span class="eyebrow">SUPPORT SYSTEM</span><h1>Support Lists</h1><p>Les 3 listes normales et 3 listes événementielles de chaque Master.</p></div><a class="source-link" id="rayshiftLink" target="_blank" rel="noopener">Rayshift ↗</a></div>
+    <div class="support-controls"><div id="supportMasterTabs" class="support-master-tabs"></div><div class="support-id"><label>NA Friend ID</label><input id="supportFriendId" type="text" placeholder="123 456 789"><button id="saveFriendId">Enregistrer</button></div></div>
+    <div id="supportLists" class="support-lists"></div>
+    <div class="support-note">Les données live de Rayshift nécessitent un identifiant Friend. Le site peut afficher une copie de vos six listes ici ; le bouton Rayshift ouvre votre profil public. La synchronisation automatique se fait proprement côté serveur, jamais avec une clé secrète dans GitHub Pages.</div>
+  </section>
+</main></div>
 
-      <div class="overview-layout">
-        <section class="panel collection-panel">
-          <div class="panel-head"><div><div class="kicker">COLLECTION</div><h2>Raretés possédées</h2></div><span class="panel-total" id="collectionTotal"></span></div>
-          <div class="rarity-display" id="rarityDisplay"></div>
-        </section>
-        <section class="panel skills-panel">
-          <div class="panel-head"><div><div class="kicker">SKILL MASTERY</div><h2>Distribution des skills</h2></div><div class="skill-average"><strong id="skillsAverage">—</strong><span>/ 10</span></div></div>
-          <div class="skill-bars" id="skillBars"></div>
-        </section>
-        <section class="panel detail-panel">
-          <div class="panel-head"><div><div class="kicker">DETAIL</div><h2>Repères</h2></div></div>
-          <div class="detail-stats" id="detailStats"></div>
-        </section>
-        <section class="panel timeline-panel">
-          <div class="panel-head"><div><div class="kicker">LEVELING</div><h2>Servants 100 → 120</h2></div><button class="text-link" data-goto="servants">Voir le roster</button></div>
-          <div id="levelHighlights" class="level-highlights"></div>
-        </section>
-      </div>
-    </section>
-
-    <section class="view" id="view-servants">
-      <div class="section-head">
-        <div><div class="kicker">ROSTER</div><h1>Servants</h1><p>Portraits, stats et progression. Les manquants sont impossibles à confondre.</p></div>
-      </div>
-      <div class="toolbar">
-        <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Rechercher un Servant…" autocomplete="off"></label>
-        <select id="classFilter"><option value="all">Toutes les classes</option></select>
-        <select id="rarityFilter"><option value="all">Toutes les raretés</option><option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option><option value="2">★★</option><option value="1">★</option><option value="welfare">Welfare</option></select>
-        <select id="sortFilter"><option value="release">Ordre de sortie</option><option value="bond">Bond level</option><option value="np">NP level</option><option value="level">Niveau</option><option value="rarity-level">Niveau / rareté</option></select>
-        <div class="view-switch"><button class="active" data-roster-mode="cards">Cards</button><button data-roster-mode="table">Table</button></div>
-      </div>
-      <div class="roster-meta"><span id="rosterCount"></span><span class="legend"><span class="legend-dot owned"></span> Possédé <span class="legend-dot missing"></span> Manquant</span></div>
-      <div id="rosterCards" class="roster-grid"></div>
-      <div id="rosterTable" class="table-container hidden"></div>
-    </section>
-
-    <section class="view" id="view-compare">
-      <div class="section-head"><div><div class="kicker">HEAD TO HEAD</div><h1>Compare</h1><p>Comparez vos trois comptes sans quitter la fiche du Servant.</p></div></div>
-      <div class="compare-top" id="compareTop"></div>
-      <div class="compare-focus panel">
-        <div class="compare-focus-head"><div><div class="kicker">SERVANT SHOWDOWN</div><h2 id="compareFocusTitle">Sélectionnez un Servant</h2></div><label class="compare-search"><span>⌕</span><input id="compareSearch" type="search" placeholder="Ex. Morgan, Castoria…"></label></div>
-        <div id="compareCards" class="compare-cards"></div>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"><div class="modal" id="modal"></div></div>
-<div class="toast" id="toast"></div>
-
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script type="module" src="app.js"></script>
-</body>
-</html>
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js"></script>
+</body></html>
