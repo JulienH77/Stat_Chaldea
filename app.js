@@ -27,8 +27,7 @@ const WELFARE_NAMES=new Set((welfareData.names||[]).map(norm));
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
 const localKey='chaldea-v5-cache';
 function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
-function classKey(c){const s=String(c||'').replace(/
- /g,' ').trim();return s==='Moon'?'Moon Cancer':s}
+function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
 function fandomAsset(name){return FANDOM_URL+encodeURIComponent(name)}
 function classImg(c){const k=classKey(c);const f=FANDOM[k]||FANDOM.Saber;const fallback=`Class-${k.replace(/ /g,'')}-Gold.png`;return `<img class="class-icon-img" src="${fandomAsset(f)}" alt="${k}" loading="eager" onerror="if(this.dataset.fb){this.style.display='none'}else{this.dataset.fb='1';this.src='${fandomAsset(fallback)}'}">`}
 function cardImg(t){return `<img src="${fandomAsset(FANDOM[t])}" alt="${t}" loading="eager">`}
