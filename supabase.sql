@@ -1,18 +1,18 @@
--- Chaldea Command — minimal collaborative database
--- Run this in Supabase > SQL editor.
+-- Chaldea Command V3 — Supabase
+-- 1) Auth > Users : crée exactement vos 3 comptes email/password.
+-- 2) Exécute ce script.
+-- 3) Dans chaldea_members, associe chaque auth_user_id à julien / yanis / attmann.
 
-create extension if not exists pgcrypto;
-
-create table if not exists public.chaldea_players (
-  id text primary key,
+create table if not exists public.chaldea_members (
+  auth_user_id uuid primary key references auth.users(id) on delete cascade,
+  player_key text not null unique check (player_key in ('julien','yanis','attmann')),
   display_name text not null,
-  region text not null default 'NA',
-  friend_code text default '',
-  updated_at timestamptz not null default now()
+  email text not null,
+  created_at timestamptz not null default now()
 );
 
 create table if not exists public.chaldea_stats (
-  player_id text not null references public.chaldea_players(id) on delete cascade,
+  player_key text not null references public.chaldea_members(player_key) on delete cascade,
   servant_id integer not null,
   level integer,
   np integer,
@@ -23,23 +23,37 @@ create table if not exists public.chaldea_stats (
   servant_coins integer,
   skills jsonb not null default '[null,null,null]'::jsonb,
   append_skills jsonb not null default '[null,null,null,null,null]'::jsonb,
-  note text default '',
   updated_at timestamptz not null default now(),
-  primary key (player_id, servant_id)
+  primary key (player_key, servant_id)
 );
 
-alter table public.chaldea_players enable row level security;
+alter table public.chaldea_members enable row level security;
 alter table public.chaldea_stats enable row level security;
 
--- This first version intentionally keeps the shared workspace simple for a private group.
--- Replace these policies with authenticated-user policies if the project becomes public.
-create policy "workspace players read" on public.chaldea_players for select using (true);
-create policy "workspace players write" on public.chaldea_players for insert with check (true);
-create policy "workspace players update" on public.chaldea_players for update using (true) with check (true);
-create policy "workspace stats read" on public.chaldea_stats for select using (true);
-create policy "workspace stats write" on public.chaldea_stats for insert with check (true);
-create policy "workspace stats update" on public.chaldea_stats for update using (true) with check (true);
+drop policy if exists "members_read_authenticated" on public.chaldea_members;
+create policy "members_read_authenticated" on public.chaldea_members
+for select to authenticated using (true);
 
-insert into public.chaldea_players (id, display_name)
-values ('julien','Julien'),('yanis','Yanis'),('attmann','Attmann')
-on conflict (id) do nothing;
+drop policy if exists "stats_read_authenticated" on public.chaldea_stats;
+create policy "stats_read_authenticated" on public.chaldea_stats
+for select to authenticated using (true);
+
+drop policy if exists "stats_insert_own_player" on public.chaldea_stats;
+create policy "stats_insert_own_player" on public.chaldea_stats
+for insert to authenticated with check (
+  player_key = (select m.player_key from public.chaldea_members m where m.auth_user_id = auth.uid())
+);
+
+drop policy if exists "stats_update_own_player" on public.chaldea_stats;
+create policy "stats_update_own_player" on public.chaldea_stats
+for update to authenticated using (
+  player_key = (select m.player_key from public.chaldea_members m where m.auth_user_id = auth.uid())
+) with check (
+  player_key = (select m.player_key from public.chaldea_members m where m.auth_user_id = auth.uid())
+);
+
+drop policy if exists "stats_delete_own_player" on public.chaldea_stats;
+create policy "stats_delete_own_player" on public.chaldea_stats
+for delete to authenticated using (
+  player_key = (select m.player_key from public.chaldea_members m where m.auth_user_id = auth.uid())
+);

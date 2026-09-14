@@ -1,43 +1,26 @@
-# Chaldea Command — FGO roster dashboard
+# Chaldea Command V3
 
-Une interface web statique pour transformer le classeur `stat_chaldea.xlsx` en dashboard FGO.
+Interface web FGO pour trois Masters : Julien, Yanis et Attmann.
 
-## Ce qui est inclus
-
-- données initiales importées des onglets `FGOjulien`, `FGOyanis`, `FGOattmann` et `excelATLAS` ;
-- vue Overview avec KPIs, répartition par classe, skills, priorités et highlights ;
-- vue Servants avec recherche, filtres et modes cards/table ;
-- fiche détaillée d'un Servant avec édition rapide ;
-- vue Compare entre Julien, Yanis et Attmann ;
-- vue Upgrade pour faire ressortir les Servants incomplets ;
-- images enrichies à la volée via Atlas Academy lorsque l'API répond ;
-- sauvegarde locale automatique dans `localStorage` ;
-- préparation d'un mode collaboratif Supabase via `supabase.sql`.
+## Fonctionnalités
+- Overview : 5★, 4★, Welfares, moyenne des 3 skills, distribution 1→10, niveaux 100/120, Bond 10+.
+- Servants : cards portrait ou table, recherche, classes, raretés, tri Bond / NP / niveau / rareté.
+- Manquants : bannière "NON POSSÉDÉ" + rendu atténué.
+- Compare : statistiques de comptes + duel Servant par Servant.
+- Données NA : Atlas Academy NA est utilisé pour enrichir les visuels et métadonnées en ligne.
+- Nouveaux Servants : la liste de référence locale peut être resynchronisée plus tard ; le site est prêt à utiliser le catalogue NA Atlas comme source canonique.
+- Cloud : Supabase Auth + RLS pour que chaque compte n'écrive que son propre roster.
 
 ## GitHub Pages
+Le dépôt doit servir la racine de ce dossier.
 
-1. Créez un nouveau dépôt GitHub.
-2. Copiez tout le dossier dans le dépôt.
-3. Activez GitHub Pages sur la branche principale / dossier racine.
-4. Ouvrez l'URL Pages.
+## Cloud
+1. Créer un projet Supabase.
+2. Activer Email/Password.
+3. Créer les trois utilisateurs.
+4. Exécuter `supabase.sql`.
+5. Ajouter les trois lignes de `chaldea_members` avec les UUID des comptes.
+6. Mettre URL + anon key dans `config.js`.
+7. Les utilisateurs peuvent alors se connecter via « Connexion / cloud ».
 
-Aucun build n'est nécessaire.
-
-## Mode collaboratif
-
-GitHub Pages ne sait pas écrire dans un fichier du dépôt depuis le navigateur de manière sûre. Le projet prévoit donc Supabase pour stocker les stats partagées.
-
-1. Créez un projet Supabase.
-2. Ouvrez SQL Editor et exécutez `supabase.sql`.
-3. Copiez l'URL du projet et l'anon key dans `config.js`.
-4. Pour un groupe privé, conservez un accès authentifié ou remplacez les policies permissives fournies ici par des policies basées sur `auth.uid()`.
-
-Le mode local reste fonctionnel sans Supabase.
-
-## Mise à jour des Servants
-
-L'application utilise votre base initiale pour le roster. À l'ouverture d'une fiche, elle interroge Atlas Academy pour récupérer des détails/visuels plus récents. Atlas Academy publie également des exports complets de données FGO ; cela permet d'automatiser plus tard la mise à jour de la base canonique.
-
-## Rayshift
-
-Rayshift propose une recherche/consultation de support publique et une API de lookup, mais le lookup API demande une clé API. Il est donc préférable de l'utiliser comme source externe optionnelle, pas d'exposer une clé Rayshift dans GitHub Pages.
+Ne jamais publier une Supabase service_role key dans GitHub.
