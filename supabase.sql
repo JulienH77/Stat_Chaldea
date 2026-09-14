@@ -76,6 +76,7 @@ end $$;
 
 
 -- Data API grants (needed on newer Supabase projects whose automatic grants are disabled)
+grant usage on schema public to anon, authenticated;
 grant select on table public.chaldea_members to authenticated;
 grant select on table public.chaldea_stats to anon, authenticated;
 grant insert, update, delete on table public.chaldea_stats to authenticated;

@@ -1,4 +1,4 @@
-# Chaldea Command · V7
+# Chaldea Command · V8
 
 GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
 
@@ -26,7 +26,7 @@ Put the project URL and browser-safe public key in `config.js`.
 
 ## Rayshift support synchronization
 
-Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app cannot reliably read the HTML cross-origin. This V7 therefore does not pretend an iframe is a data API.
+Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app cannot reliably read the HTML cross-origin. This V8 therefore does not pretend an iframe is a data API.
 
 `supabase/functions/rayshift-proxy/index.ts` is the server-side proxy skeleton. Deploy it as a Supabase Edge Function, then set `rayshiftProxyUrl` in `config.js`. The client can then fetch the public Rayshift HTML through your own endpoint and render the six support decks in its own UI.
 
