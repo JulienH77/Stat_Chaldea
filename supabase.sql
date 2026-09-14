@@ -73,3 +73,12 @@ end $$;
 -- For Yanis and Attmann later, insert their auth UUIDs manually:
 -- insert into public.chaldea_members(auth_user_id,player_key,display_name,email) values('AUTH-UUID','yanis','Yanis','EMAIL');
 -- insert into public.chaldea_members(auth_user_id,player_key,display_name,email) values('AUTH-UUID','attmann','Attmann','EMAIL');
+
+
+-- Data API grants (needed on newer Supabase projects whose automatic grants are disabled)
+grant select on table public.chaldea_members to authenticated;
+grant select on table public.chaldea_stats to anon, authenticated;
+grant insert, update, delete on table public.chaldea_stats to authenticated;
+grant select on table public.chaldea_support_profiles to anon, authenticated;
+grant insert, update, delete on table public.chaldea_support_profiles to authenticated;
+grant execute on function public.claim_julien() to authenticated;
