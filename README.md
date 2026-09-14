@@ -1,36 +1,35 @@
-# Chaldea Command V5
+# Chaldea Command · V7
 
-## 1. GitHub Pages
-Publish this folder as the root of your GitHub Pages site.
+GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
 
-## 2. Supabase
-Run `supabase.sql` once in the Supabase SQL Editor. Do **not** upload `initial-state.json`, the Excel file, or any other data file into Supabase. The website keeps the Excel snapshot locally as a fallback and imports it into `chaldea_stats` when an editor explicitly clicks the first-time import banner.
+## Data architecture
 
-### Add Julien
-After creating Julien in Supabase Authentication, copy the Auth user UUID and run the INSERT shown at the bottom of `supabase.sql`.
+- `data/initial-state.json` is the local seed/snapshot only.
+- Supabase `chaldea_stats` is the shared source of truth once cloud is configured.
+- Atlas Academy NA is used for the live Servant catalogue, stats and artworks. The NA API is queried separately from JP.
+- `data/welfare-ids.json` stores the explicit Welfare list because Welfare status is not safe to infer only from rarity.
 
-### Add Yanis / Attmann later
-Create their Auth users, then add one row each to `chaldea_members` with `player_key` = `yanis` or `attmann`.
+## Supabase
 
-## 3. config.js
-Put your Supabase URL and anon key here:
-```js
-window.CHALDEA_CONFIG={
-  supabaseUrl:'https://YOUR_PROJECT.supabase.co',
-  supabaseAnonKey:'YOUR_ANON_KEY'
-};
-```
-Only the anon key belongs in the browser. Never publish a service-role key.
+Run **only** `supabase.sql` in the SQL editor. Do not upload `initial-state.json` to Supabase.
 
-## 4. Persistence model
-- Logged-out visitors read `chaldea_stats` from Supabase when available.
-- A logged-in editor can only write the rows belonging to their own `player_key`.
-- The static Excel snapshot is only a fallback / first import. It does not overwrite cloud data after synchronization.
-- Supabase Realtime refreshes the public view when a stat changes.
+The authenticated player can edit only their own `player_key`. Public/other users can read the roster.
 
-## 5. Current limitations
-Rayshift is public and shows the support list through its own site, but an embedded live mirror can be blocked by browser framing/CSP rules. The Support Lists tab therefore includes a Rayshift profile frame when permitted and a full direct link as fallback. Automatic parsing of the six decks should be moved to a server-side proxy if Rayshift exposes a supported endpoint for it.
+Put the project URL and browser-safe public key in `config.js`.
 
+## First initialization
 
-### Supabase
-`config.js` contains your Supabase project URL. Paste the **anon public key from Supabase** into `supabaseAnonKey` (the key is intentionally left blank in this packaged build). Run only `supabase.sql` in the Supabase SQL Editor. Do not upload `initial-state.json` or the Excel file to Supabase.
+1. Create the three Supabase Auth users.
+2. Link them to `julien`, `yanis`, and `attmann` in `chaldea_members`.
+3. Log in on the site.
+4. The editor can import the initial snapshot into Supabase.
+
+## Rayshift support synchronization
+
+Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app cannot reliably read the HTML cross-origin. This V7 therefore does not pretend an iframe is a data API.
+
+`supabase/functions/rayshift-proxy/index.ts` is the server-side proxy skeleton. Deploy it as a Supabase Edge Function, then set `rayshiftProxyUrl` in `config.js`. The client can then fetch the public Rayshift HTML through your own endpoint and render the six support decks in its own UI.
+
+## QA
+
+`app.js` is checked with `node --check` before packaging.
