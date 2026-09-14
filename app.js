@@ -12,6 +12,7 @@ const FANDOM={
  grail:'Icongrail.png', Q:'Quickmini.png', A:'Artsmini.png', B:'Bustermini.png'
 };
 const FANDOM_URL='https://fategrandorder.fandom.com/wiki/Special:Redirect/file/';
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=(state.roster||[]).filter(r=>!FUTURE_NAMES.has(norm(r.name)));
@@ -21,7 +22,6 @@ const selectedClasses=new Set(),selectedRarities=new Set();
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
-const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
 const WELFARE_NAMES=new Set((welfareData.names||[]).map(norm));
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
