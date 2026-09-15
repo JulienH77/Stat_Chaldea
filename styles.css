@@ -75,3 +75,18 @@
 .eyebrow{font-size:10px}.panel-head h2{font-size:21px}.marker small{font-size:9px}.rarity-card .label{font-size:10px}.command-title,.levels-title{font-size:11px}
 @media(max-width:1050px){.xp-top-grid{grid-template-columns:1fr}.xp-milestones{grid-template-columns:repeat(3,1fr)}.detail-stats-v10{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:700px){.xp-target-form,.xp-card-needs{grid-template-columns:1fr 1fr}.xp-milestones{grid-template-columns:repeat(2,1fr)}.detail-stats-v10{grid-template-columns:1fr!important}}
+
+/* V11 readability + input stability */
+.sort-focus{font-variant-numeric:tabular-nums}
+.xp-table{table-layout:fixed;min-width:760px}
+.xp-table th,.xp-table td{text-align:center}
+.xp-table th:first-child,.xp-table td:first-child{text-align:left;width:150px}
+.xp-table thead th:nth-child(2),.xp-table thead th:nth-child(3),.xp-table thead th:nth-child(4),
+.xp-table tbody td:nth-child(2),.xp-table tbody td:nth-child(3),.xp-table tbody td:nth-child(4),
+.xp-table tfoot th:nth-child(2),.xp-table tfoot th:nth-child(3),.xp-table tfoot th:nth-child(4){width:92px}
+.xp-table tbody td:nth-child(2),.xp-table tbody td:nth-child(3),.xp-table tbody td:nth-child(4){padding-left:12px;padding-right:12px}
+.xp-stock{width:100%;max-width:84px;margin:auto;text-align:center;font-variant-numeric:tabular-nums}
+.xp-read{width:100%;text-align:center;font-variant-numeric:tabular-nums}
+.np-edit-wrap .np-input{font-variant-numeric:tabular-nums}
+.np-mini-icon img{width:18px!important;height:18px!important;object-fit:contain;vertical-align:middle}
+.rarity-short{white-space:nowrap}

@@ -14,14 +14,14 @@ const FANDOM={
  grail:'Icongrail.png', Q:'Quickmini.png', A:'Artsmini.png', B:'Bustermini.png'
 };
 const FANDOM_URL='https://fategrandorder.fandom.com/wiki/Special:Redirect/file/';
-const NP_LEVEL_ICON='Powerup.png';
+const NP_LEVEL_ICON='Nppowerup.png';
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=(state.roster||[]).filter(r=>!FUTURE_NAMES.has(norm(r.name)));
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0, supportPlayer='julien';
-const selectedClasses=new Set(),selectedRarities=new Set();
+const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
@@ -31,6 +31,8 @@ const XP_DEFAULT=()=>Object.fromEntries(XP_CLASSES.map(c=>[c,{5:0,4:0,3:0}]));
 PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
+const fmtNum=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString('fr-FR'): '—'};
+const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math.trunc(n)):''};
 const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
 const WELFARE_NAMES=new Set((welfareData.names||[]).map(norm));
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
@@ -92,7 +94,7 @@ function renderOverview(){
 function fillFilters(){
  const classes=[...new Set(state.roster.filter(isVisible).map(r=>classKey(r.class)).filter(Boolean))].sort((a,b)=>CLASS_ORDER.indexOf(a)-CLASS_ORDER.indexOf(b));
  $('#classPop').innerHTML=classes.map(c=>`<label class="check-item"><input type="checkbox" data-class="${c}" ${selectedClasses.has(c)?'checked':''}>${classImg(c)}<span>${c}</span></label>`).join('');
- const rs=[['5','5★'],['4','4★'],['3','3★'],['2','2★'],['1','1★'],['welfare','Welfare']];$('#rarityPop').innerHTML=rs.map(([v,l])=>`<label class="check-item"><input type="checkbox" data-rarity="${v}" ${selectedRarities.has(v)?'checked':''}><span>${l}</span></label>`).join('');
+ const rs=[['5','5★'],['4','4★'],['welfare','4★ - Welfare'],['3','3★'],['2','2★'],['1','1★']];$('#rarityPop').innerHTML=rs.map(([v,l])=>`<label class="check-item"><input type="checkbox" data-rarity="${v}" ${selectedRarities.has(v)?'checked':''}><span>${l}</span></label>`).join('');
  $$('#classPop input').forEach(i=>i.onchange=()=>{i.checked?selectedClasses.add(i.dataset.class):selectedClasses.delete(i.dataset.class);updateFilterLabels();renderRoster()});
  $$('#rarityPop input').forEach(i=>i.onchange=()=>{i.checked?selectedRarities.add(i.dataset.rarity):selectedRarities.delete(i.dataset.rarity);updateFilterLabels();renderRoster()});
  updateFilterLabels();
@@ -100,7 +102,7 @@ function fillFilters(){
 function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:''}
 function atlasCacheValue(r,kind){const d=atlasById.get(Number(r.atlasId||r.id));if(d){const s=stats(currentPlayer,r.id);if(s.level==null)return 0;const cs=currentStats(d,r,s);const v=kind==='atk'?cs.atk:cs.hp;if(Number.isFinite(Number(v)))return Number(v)}return 0}
 function sortRows(rows){const mode=$('#sortFilter').value,sg=sortDir==='asc'?1:-1;rows.sort((a,b)=>{let x,y;if(mode==='bond'){x=Number(a.s.bond)||-1;y=Number(b.s.bond)||-1}else if(mode==='np'){x=Number(a.s.np)||-1;y=Number(b.s.np)||-1}else if(mode==='level'){x=Number(a.s.level)||-1;y=Number(b.s.level)||-1}else if(mode==='atk'||mode==='hp'){x=atlasCacheValue(a.r,mode)??-1;y=atlasCacheValue(b.r,mode)??-1}else{x=Number(a.r.releaseNo??a.r.id);y=Number(b.r.releaseNo??b.r.id)}return x===y?String(a.r.name).localeCompare(String(b.r.name))*sg:(x-y)*sg})}
-function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np')return `<div class="sort-focus">NP ${Math.min(5,Math.max(0,Number(s.np)||0))}</div>`;if(mode==='level')return `<div class="sort-focus">Lv ${s.level??'—'}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${atlasCacheValue(r,'atk')??'—'}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${atlasCacheValue(r,'hp')??'—'}</div>`;return''}
+function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np')return `<div class="sort-focus">NP ${Math.min(5,Math.max(0,Number(s.np)||0))}</div>`;if(mode==='level')return `<div class="sort-focus">Lv ${s.level??'—'}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${fmtNum(atlasCacheValue(r,'atk'))}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${fmtNum(atlasCacheValue(r,'hp'))}</div>`;return''}
 function renderRoster(){
  const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))});
  sortRows(rows);$('#rosterCount').textContent=rows.length;$('#rosterSummary').textContent=`${countOwned(currentPlayer)} possédés · ${state.roster.filter(isVisible).length-countOwned(currentPlayer)} manquants`;$('#rosterCards').classList.toggle('hidden',rosterMode!=='cards');$('#rosterTable').classList.toggle('hidden',rosterMode!=='table');
@@ -148,7 +150,7 @@ function openModalBase(r,d,urls,idx){
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
- const npHtml=can?`<div class="np-edit-wrap"><img src="${ni}" alt="NP"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="99"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row"><img src="${ni}" alt="NP"><b>${npRead}</b></div>`;
+ const npHtml=can?`<div class="np-edit-wrap"><img src="${ni}" alt="NP"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row"><img src="${ni}" alt="NP"><b>${npRead}</b></div>`;
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
@@ -177,7 +179,47 @@ function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p){const inv=xpInventory(p);let random=0,classBonus=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);random+=n*XP_CARD_VALUE[star];classBonus+=n*XP_CARD_CLASS_VALUE[star]}}return{random,classBonus}}
 function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(1,Math.min(120,Number(to)||1));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
 function cardsNeeded(xp,value){return xp>0?Math.ceil(xp/value):0}
-function renderXp(){const p=currentPlayer,inv=xpInventory(p),tot=xpTotalsFor(p),can=currentCanEdit();$('#xpRandomTotal').textContent=xpFmt(tot.random);$('#xpClassBonusTotal').textContent=xpFmt(tot.classBonus);$('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{const row=inv[c];const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);return `<tr><th>${c}</th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-input beige xp-stock" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${row[st]||0}">`:`<span class="xp-read">${row[st]||0}</span>`}</td>`).join('')}<td>${xpFmt(total)}</td><td>${xpFmt(bonus)}</td></tr>`}).join('');$('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${[5,4,3].map(st=>`<th>${XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0)}</th>`).join('')}<th>${xpFmt(tot.random)}</th><th>${xpFmt(tot.classBonus)}</th></tr>`;$$('.xp-stock').forEach(i=>i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Number(i.value)||0);localCacheSave();renderXp();saveXpCloud()});if($('#xpCurrentLevel'))$('#xpCurrentLevel').oninput=renderXp;if($('#xpTargetLevel'))$('#xpTargetLevel').onchange=renderXp;const cur=Math.max(1,Math.min(120,Number($('#xpCurrentLevel')?.value)||1)),target=Math.max(cur,Math.min(120,Number($('#xpTargetLevel')?.value)||120)),need=xpNeed(cur,target);$('#xpTargetSummary').innerHTML=`<div class="xp-need-main"><strong>${xpFmt(need)}</strong><span>XP restant pour passer de ${cur} à ${target}</span></div><div class="xp-card-needs"><div><b>${cardsNeeded(need,81000)}</b><span>cartes 5★ random</span></div><div><b>${cardsNeeded(need,97200)}</b><span>cartes 5★ même classe</span></div><div><b>${cardsNeeded(need,27000)}</b><span>cartes 4★ random</span></div><div><b>${cardsNeeded(need,32400)}</b><span>cartes 4★ même classe</span></div></div>`;const milestones=[60,70,80,90,100,120].map(l=>`<div class="xp-milestone"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${cardsNeeded(XP_TO_LEVEL[l],27000)} × 4★ · ${cardsNeeded(XP_TO_LEVEL[l],81000)} × 5★</small></div>`).join('');$('#xpMilestones').innerHTML=milestones}
+function xpDerivedState(p){
+  const inv=xpInventory(p);
+  let random=0,classBonus=0;
+  for(const c of XP_CLASSES){
+    for(const star of [5,4,3]){
+      const n=Math.max(0,Number(inv[c][star])||0);
+      random+=n*XP_CARD_VALUE[star];
+      classBonus+=n*XP_CARD_CLASS_VALUE[star];
+    }
+  }
+  const cur=Math.max(1,Math.min(120,Number($('#xpCurrentLevel')?.value)||1));
+  const target=Math.max(cur,Math.min(120,Number($('#xpTargetLevel')?.value)||120));
+  return {inv,random,classBonus,cur,target,need:xpNeed(cur,target)};
+}
+function updateXpComputed(){
+  const d=xpDerivedState(currentPlayer);
+  $('#xpRandomTotal').textContent=xpFmt(d.random);
+  $('#xpClassBonusTotal').textContent=xpFmt(d.classBonus);
+  $('#xpTargetSummary').innerHTML=`<div class="xp-need-main"><strong>${xpFmt(d.need)}</strong><span>XP restant pour passer de ${d.cur} à ${d.target}</span></div><div class="xp-card-needs"><div><b>${cardsNeeded(d.need,81000)}</b><span>cartes 5★ random</span></div><div><b>${cardsNeeded(d.need,97200)}</b><span>cartes 5★ même classe</span></div><div><b>${cardsNeeded(d.need,27000)}</b><span>cartes 4★ random</span></div><div><b>${cardsNeeded(d.need,32400)}</b><span>cartes 4★ même classe</span></div></div>`;
+}
+function renderXp(){
+  const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit();
+  $('#xpRandomTotal').textContent=xpFmt(xpTotalsFor(p).random);
+  $('#xpClassBonusTotal').textContent=xpFmt(xpTotalsFor(p).classBonus);
+  $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
+    const row=inv[c];
+    const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
+    const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);
+    return `<tr><th>${c}</th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-input beige xp-stock" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td>${xpFmt(total)}</td><td>${xpFmt(bonus)}</td></tr>`
+  }).join('');
+  $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${[5,4,3].map(st=>`<th>${fmtNum(XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0))}</th>`).join('')}<th>${xpFmt(xpTotalsFor(p).random)}</th><th>${xpFmt(xpTotalsFor(p).classBonus)}</th></tr>`;
+  $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<div class="xp-milestone"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★ · ${fmtNum(cardsNeeded(XP_TO_LEVEL[l],81000))} × 5★</small></div>`).join('');
+  $$('.xp-stock').forEach(i=>i.addEventListener('input',()=>{
+    inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Number(i.value)||0);
+    localCacheSave();
+    updateXpComputed();
+    clearTimeout(i._cloudTimer);
+    i._cloudTimer=setTimeout(saveXpCloud,500);
+  }));
+  updateXpComputed();
+}
 
 function navigate(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP'}[v];$('#sidebar').classList.remove('open');renderAll()}
 function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp()}
@@ -223,5 +265,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});$('#compareSearch').onchange=e=>{const q=norm(e.target.value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).includes(q));if(exact){compareFocusId=exact.id;renderShowdown()}};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpTargetLevel').onchange=updateXpComputed;$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});$('#compareSearch').onchange=e=>{const q=norm(e.target.value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).includes(q));if(exact){compareFocusId=exact.id;renderShowdown()}};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
 localCacheLoad();PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
