@@ -58,13 +58,48 @@
 </section>
 
 <section class="view" id="view-xp">
-  <div class="page-heading"><div><span class="eyebrow">RESOURCE CALCULATOR</span><h1>Calcul XP</h1><p>Calcule l’expérience disponible par classe, les besoins pour atteindre un niveau cible et le nombre de cartes 4★ / 5★ nécessaires.</p></div><div class="source-badge">FGO · XP</div></div>
-  <div class="xp-top-grid">
-    <section class="panel xp-target-panel"><div class="panel-head"><div><span class="eyebrow">XP PERSONNAGE</span><h2>Progression vers le niveau cible</h2></div></div><div class="xp-target-form"><label>Niveau actuel<input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1"></label><label>Niveau souhaité<select id="xpTargetLevel" class="xp-input beige"><option>60</option><option>70</option><option>80</option><option>90</option><option>100</option><option selected>120</option></select></label></div><div id="xpTargetSummary" class="xp-target-summary"></div></section>
-    <section class="panel xp-summary-panel"><div class="panel-head"><div><span class="eyebrow">STOCK</span><h2>Total XP en réserve</h2></div></div><div class="xp-total-grid"><div><small>RANDOM</small><strong id="xpRandomTotal">0</strong></div><div><small>CLASS BONUS</small><strong id="xpClassBonusTotal">0</strong></div></div></section>
+  <div class="page-heading">
+    <div><span class="eyebrow">RESOURCE PLANNER</span><h1>Calcul XP</h1><p>Choisis ton niveau de départ et ton objectif. Le site calcule immédiatement l’XP à prévoir, puis te permet de tenir un inventaire simple de tes cartes XP.</p></div>
+    <div class="source-badge">FGO · LEVEL 120</div>
   </div>
-  <section class="panel xp-table-panel"><div class="panel-head"><div><span class="eyebrow">INVENTAIRE</span><h2>Cartes XP par classe</h2></div><span class="panel-tag">CASES BEIGES = À MODIFIER</span></div><div class="xp-table-wrap"><table class="xp-table"><thead><tr><th>Classe</th><th>5★</th><th>4★</th><th>3★</th><th>XP RANDOM</th><th>XP CLASS BONUS</th></tr></thead><tbody id="xpTableBody"></tbody><tfoot id="xpTableFoot"></tfoot></table></div></section>
-  <section class="panel xp-levels-panel"><div class="panel-head"><div><span class="eyebrow">REPÈRES</span><h2>Palier de cartes nécessaires</h2></div></div><div id="xpMilestones" class="xp-milestones"></div></section>
+
+  <section class="xp-command panel">
+    <div class="xp-command-head">
+      <div><span class="eyebrow">MISSION</span><h2>Préparer un Servant</h2><span class="xp-subtitle">Aucune saisie compliquée : deux niveaux, puis le résultat.</span></div>
+      <div class="xp-goal-pills" id="xpGoalPills"><button data-xp-goal="60">Lv 60</button><button data-xp-goal="70">Lv 70</button><button data-xp-goal="80">Lv 80</button><button data-xp-goal="90">Lv 90</button><button data-xp-goal="100">Lv 100</button><button class="active" data-xp-goal="120">Lv 120</button></div>
+    </div>
+    <div class="xp-level-choice">
+      <label class="xp-level-card"><span>NIVEAU ACTUEL</span><strong>1</strong><input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1" inputmode="numeric"></label>
+      <div class="xp-arrow">→</div>
+      <label class="xp-level-card target"><span>NIVEAU SOUHAITÉ</span><strong>120</strong><select id="xpTargetLevel" class="xp-input beige"><option value="60">60</option><option value="70">70</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="120" selected>120</option></select></label>
+    </div>
+    <div id="xpTargetSummary" class="xp-target-summary xp-result"></div>
+  </section>
+
+  <div class="xp-dashboard-grid">
+    <section class="panel xp-inventory-panel">
+      <div class="panel-head"><div><span class="eyebrow">INVENTAIRE</span><h2>Cartes XP en réserve</h2><span class="xp-subtitle">Les cases beiges sont les seules zones à modifier.</span></div><span class="panel-tag">PAR CLASSE</span></div>
+      <div class="xp-table-wrap xp-table-clean">
+        <table class="xp-table">
+          <thead><tr><th>CLASSE</th><th><span class="star-title five">5★</span><small>81 000 XP</small></th><th><span class="star-title four">4★</span><small>27 000 XP</small></th><th><span class="star-title three">3★</span><small>9 000 XP</small></th><th>XP RANDOM</th><th>XP CLASSE</th></tr></thead>
+          <tbody id="xpTableBody"></tbody>
+          <tfoot id="xpTableFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <aside class="xp-side">
+      <section class="panel xp-stock-panel">
+        <div class="panel-head"><div><span class="eyebrow">TON STOCK</span><h2>Vue instantanée</h2></div></div>
+        <div class="xp-total-grid modern"><div><small>XP DISPONIBLE</small><strong id="xpRandomTotal">0</strong></div><div><small>BONUS DE CLASSE</small><strong id="xpClassBonusTotal">0</strong></div></div>
+        <div id="xpStockHint" class="xp-stock-hint"></div>
+      </section>
+      <section class="panel xp-milestones-panel">
+        <div class="panel-head"><div><span class="eyebrow">REPÈRES RAPIDES</span><h2>Coût des paliers</h2></div></div>
+        <div id="xpMilestones" class="xp-milestones modern"></div>
+      </section>
+    </aside>
+  </div>
 </section>
 
 <section class="view" id="view-supports">

@@ -14,7 +14,7 @@ const FANDOM={
  grail:'Icongrail.png', Q:'Quickmini.png', A:'Artsmini.png', B:'Bustermini.png'
 };
 const FANDOM_URL='https://fategrandorder.fandom.com/wiki/Special:Redirect/file/';
-const NP_LEVEL_ICON='Nppowerup.png';
+const NP_LEVEL_ICON='NP_Icon.png';
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
@@ -177,47 +177,50 @@ function renderRadar(colors){const labels=['Collection','Skill 1','Skill 2','Ski
 function renderSupports(){supportPlayer=currentPlayer;const fid=supportLocal[supportPlayer]?.friendId||'';$('#supportFriendId').value=fid;$('#rayshiftLink').href=fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup';$('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');$$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});const frame=$('#rayFrameWrap');if(fid){frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>Friend ID ${fid}</span></div><p>Le profil Rayshift est public, mais son contenu ne peut pas être lu directement par GitHub Pages à cause des restrictions cross-origin. Le site est prêt à recevoir un proxy Supabase pour importer les 6 decks et les afficher ici sans iframe.</p><a class="source-btn" href="https://rayshift.io/na/${fid.replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`}else{frame.innerHTML='<div class="empty-state"><strong>Aucun Friend ID</strong><span>Ajoute le Friend ID NA pour préparer la synchronisation.</span></div>'}const lists=Array.from({length:6},(_,i)=>({name:`${i<3?'Normal':'Event'} ${i%3+1}`,event:i>=3}));$('#supportLists').innerHTML=lists.map((l,i)=>`<article class="support-list"><div class="support-list-head"><div><h3>${l.name}</h3><small>${l.event?'Liste événement':'Liste normale'}</small></div><span class="support-status">${fid?'À SYNCHRONISER':'À CONFIGURER'}</span></div><div class="support-placeholder"><strong>Deck ${i+1}</strong><span>Le contenu apparaîtra ici après synchronisation Rayshift → Supabase.</span><a href="${fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup'}" target="_blank" rel="noopener">Ouvrir la source ↗</a></div></article>`).join('')}
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p){const inv=xpInventory(p);let random=0,classBonus=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);random+=n*XP_CARD_VALUE[star];classBonus+=n*XP_CARD_CLASS_VALUE[star]}}return{random,classBonus}}
-function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(1,Math.min(120,Number(to)||1));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
+function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(a,Math.min(120,Number(to)||120));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
 function cardsNeeded(xp,value){return xp>0?Math.ceil(xp/value):0}
 function xpDerivedState(p){
   const inv=xpInventory(p);
-  let random=0,classBonus=0;
-  for(const c of XP_CLASSES){
-    for(const star of [5,4,3]){
-      const n=Math.max(0,Number(inv[c][star])||0);
-      random+=n*XP_CARD_VALUE[star];
-      classBonus+=n*XP_CARD_CLASS_VALUE[star];
-    }
-  }
+  const totals=xpTotalsFor(p);
   const cur=Math.max(1,Math.min(120,Number($('#xpCurrentLevel')?.value)||1));
   const target=Math.max(cur,Math.min(120,Number($('#xpTargetLevel')?.value)||120));
-  return {inv,random,classBonus,cur,target,need:xpNeed(cur,target)};
+  const need=xpNeed(cur,target);
+  return {inv,random:totals.random,classBonus:totals.classBonus,cur,target,need};
 }
 function updateXpComputed(){
   const d=xpDerivedState(currentPlayer);
   $('#xpRandomTotal').textContent=xpFmt(d.random);
   $('#xpClassBonusTotal').textContent=xpFmt(d.classBonus);
-  $('#xpTargetSummary').innerHTML=`<div class="xp-need-main"><strong>${xpFmt(d.need)}</strong><span>XP restant pour passer de ${d.cur} à ${d.target}</span></div><div class="xp-card-needs"><div><b>${cardsNeeded(d.need,81000)}</b><span>cartes 5★ random</span></div><div><b>${cardsNeeded(d.need,97200)}</b><span>cartes 5★ même classe</span></div><div><b>${cardsNeeded(d.need,27000)}</b><span>cartes 4★ random</span></div><div><b>${cardsNeeded(d.need,32400)}</b><span>cartes 4★ même classe</span></div></div>`;
+  const random5=cardsNeeded(d.need,XP_CARD_VALUE[5]);
+  const class5=cardsNeeded(d.need,XP_CARD_CLASS_VALUE[5]);
+  const random4=cardsNeeded(d.need,XP_CARD_VALUE[4]);
+  const class4=cardsNeeded(d.need,XP_CARD_CLASS_VALUE[4]);
+  const available=d.random+d.classBonus;
+  const remaining=Math.max(0,d.need-available);
+  $('#xpTargetSummary').innerHTML=`
+    <div class="xp-result-main"><div><small>XP NÉCESSAIRE</small><strong>${xpFmt(d.need)}</strong><span>${d.cur} → ${d.target}</span></div><div class="xp-result-status ${remaining===0?'ready':''}"><b>${remaining===0?'OBJECTIF COUVERT':'À PRÉVOIR'}</b><span>${remaining===0?'Ton stock couvre déjà le besoin.':xpFmt(remaining)+' XP restant à réunir.'}</span></div></div>
+    <div class="xp-card-results"><div><b>${xpFmt(random5)}</b><span>cartes 5★ random</span></div><div><b>${xpFmt(class5)}</b><span>cartes 5★ classe</span></div><div><b>${xpFmt(random4)}</b><span>cartes 4★ random</span></div><div><b>${xpFmt(class4)}</b><span>cartes 4★ classe</span></div></div>`;
+  const hint=$('#xpStockHint');
+  if(hint) hint.innerHTML=remaining===0?'<strong>✓ Stock suffisant</strong><span>Ton inventaire couvre l’objectif sélectionné.</span>':`<strong>${xpFmt(remaining)} XP à réunir</strong><span>Le calcul tient compte de tout ton inventaire déclaré.</span>`;
 }
 function renderXp(){
   const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit();
-  $('#xpRandomTotal').textContent=xpFmt(xpTotalsFor(p).random);
-  $('#xpClassBonusTotal').textContent=xpFmt(xpTotalsFor(p).classBonus);
+  const totals=xpTotalsFor(p);
+  $('#xpRandomTotal').textContent=xpFmt(totals.random);
+  $('#xpClassBonusTotal').textContent=xpFmt(totals.classBonus);
   $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
     const row=inv[c];
     const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
     const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);
-    return `<tr><th>${c}</th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-input beige xp-stock" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td>${xpFmt(total)}</td><td>${xpFmt(bonus)}</td></tr>`
+    const icon=classImg(c==='Autre'?'Saber':c).replace('alt="'+(c==='Autre'?'Saber':c)+'"','alt=""');
+    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other">◆</span>':icon}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`
   }).join('');
-  $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${[5,4,3].map(st=>`<th>${fmtNum(XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0))}</th>`).join('')}<th>${xpFmt(xpTotalsFor(p).random)}</th><th>${xpFmt(xpTotalsFor(p).classBonus)}</th></tr>`;
-  $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<div class="xp-milestone"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★ · ${fmtNum(cardsNeeded(XP_TO_LEVEL[l],81000))} × 5★</small></div>`).join('');
-  $$('.xp-stock').forEach(i=>i.addEventListener('input',()=>{
-    inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Number(i.value)||0);
-    localCacheSave();
-    updateXpComputed();
-    clearTimeout(i._cloudTimer);
-    i._cloudTimer=setTimeout(saveXpCloud,500);
-  }));
+  const grand=[5,4,3].map(st=>XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0));
+  $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${grand.map(v=>`<th>${fmtNum(v)}</th>`).join('')}<th>${xpFmt(totals.random)}</th><th>${xpFmt(totals.classBonus)}</th></tr>`;
+  $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<button class="xp-milestone modern" data-xp-milestone="${l}"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★</small></button>`).join('');
+  $$('.xp-stock-input').forEach(i=>i.addEventListener('input',()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Number(i.value)||0);localCacheSave();updateXpComputed();clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(saveXpCloud,500)}));
+  $$('.xp-milestone').forEach(b=>b.addEventListener('click',()=>{$('#xpTargetLevel').value=b.dataset.xpMilestone;$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===b.dataset.xpMilestone));updateXpComputed()}));
+  $$('.xp-goal-pills button').forEach(b=>b.classList.toggle('active',b.dataset.xpGoal===$('#xpTargetLevel').value));
   updateXpComputed();
 }
 
@@ -265,5 +268,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpTargetLevel').onchange=updateXpComputed;$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});$('#compareSearch').onchange=e=>{const q=norm(e.target.value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).includes(q));if(exact){compareFocusId=exact.id;renderShowdown()}};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').onchange=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{$('#xpTargetLevel').value=b.dataset.xpGoal;$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x===b));updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});$('#compareSearch').onchange=e=>{const q=norm(e.target.value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).includes(q));if(exact){compareFocusId=exact.id;renderShowdown()}};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
 localCacheLoad();PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
