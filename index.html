@@ -16,6 +16,7 @@
     <button class="nav-item" data-view="servants"><span class="nav-index">02</span><span>Servants</span></button>
     <button class="nav-item" data-view="compare"><span class="nav-index">03</span><span>Compare</span></button>
     <button class="nav-item" data-view="supports"><span class="nav-index">04</span><span>Support Lists</span></button>
+    <button class="nav-item" data-view="xp"><span class="nav-index">05</span><span>Calcul XP</span></button>
   </nav>
   <div class="sidebar-foot">
     <div class="sync-box"><span id="syncDot"></span><div><small>SYNCHRONISATION</small><b id="syncText">Mode local</b></div></div>
@@ -54,6 +55,16 @@
   <div id="compareTop" class="compare-people"></div>
   <section class="panel showdown"><div class="panel-head showdown-head"><div><span class="eyebrow">SERVANT SHOWDOWN</span><h2 id="compareFocusTitle">Sélectionne un Servant</h2></div><div class="autocomplete-wrap"><input id="compareSearch" list="compareNames" type="search" placeholder="Choisir un Servant…"><datalist id="compareNames"></datalist></div></div><div id="compareCards" class="showdown-grid"></div></section>
   <section class="panel compare-visual"><div class="panel-head"><div><span class="eyebrow">MASTER RADAR</span><h2>Profil de progression</h2></div><div class="legend" id="radarLegend"></div></div><div id="compareRadar" class="radar-wrap"></div></section>
+</section>
+
+<section class="view" id="view-xp">
+  <div class="page-heading"><div><span class="eyebrow">RESOURCE CALCULATOR</span><h1>Calcul XP</h1><p>Calcule l’expérience disponible par classe, les besoins pour atteindre un niveau cible et le nombre de cartes 4★ / 5★ nécessaires.</p></div><div class="source-badge">FGO · XP</div></div>
+  <div class="xp-top-grid">
+    <section class="panel xp-target-panel"><div class="panel-head"><div><span class="eyebrow">XP PERSONNAGE</span><h2>Progression vers le niveau cible</h2></div></div><div class="xp-target-form"><label>Niveau actuel<input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1"></label><label>Niveau souhaité<select id="xpTargetLevel" class="xp-input beige"><option>60</option><option>70</option><option>80</option><option>90</option><option>100</option><option selected>120</option></select></label></div><div id="xpTargetSummary" class="xp-target-summary"></div></section>
+    <section class="panel xp-summary-panel"><div class="panel-head"><div><span class="eyebrow">STOCK</span><h2>Total XP en réserve</h2></div></div><div class="xp-total-grid"><div><small>RANDOM</small><strong id="xpRandomTotal">0</strong></div><div><small>CLASS BONUS</small><strong id="xpClassBonusTotal">0</strong></div></div></section>
+  </div>
+  <section class="panel xp-table-panel"><div class="panel-head"><div><span class="eyebrow">INVENTAIRE</span><h2>Cartes XP par classe</h2></div><span class="panel-tag">CASES BEIGES = À MODIFIER</span></div><div class="xp-table-wrap"><table class="xp-table"><thead><tr><th>Classe</th><th>5★</th><th>4★</th><th>3★</th><th>XP RANDOM</th><th>XP CLASS BONUS</th></tr></thead><tbody id="xpTableBody"></tbody><tfoot id="xpTableFoot"></tfoot></table></div></section>
+  <section class="panel xp-levels-panel"><div class="panel-head"><div><span class="eyebrow">REPÈRES</span><h2>Palier de cartes nécessaires</h2></div></div><div id="xpMilestones" class="xp-milestones"></div></section>
 </section>
 
 <section class="view" id="view-supports">

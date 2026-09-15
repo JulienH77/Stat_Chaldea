@@ -83,3 +83,19 @@ grant insert, update, delete on table public.chaldea_stats to authenticated;
 grant select on table public.chaldea_support_profiles to anon, authenticated;
 grant insert, update, delete on table public.chaldea_support_profiles to authenticated;
 grant execute on function public.claim_julien() to authenticated;
+
+-- XP inventory per Master
+create table if not exists public.chaldea_xp(
+ player_key text primary key references public.chaldea_members(player_key) on delete cascade,
+ inventory jsonb not null default '{}'::jsonb,
+ updated_at timestamptz not null default now()
+);
+alter table public.chaldea_xp enable row level security;
+drop policy if exists xp_read_public on public.chaldea_xp;
+create policy xp_read_public on public.chaldea_xp for select to anon, authenticated using(true);
+drop policy if exists xp_insert_own on public.chaldea_xp;
+create policy xp_insert_own on public.chaldea_xp for insert to authenticated with check(player_key=(select m.player_key from public.chaldea_members m where m.auth_user_id=auth.uid() and m.can_edit=true));
+drop policy if exists xp_update_own on public.chaldea_xp;
+create policy xp_update_own on public.chaldea_xp for update to authenticated using(player_key=(select m.player_key from public.chaldea_members m where m.auth_user_id=auth.uid() and m.can_edit=true)) with check(player_key=(select m.player_key from public.chaldea_members m where m.auth_user_id=auth.uid() and m.can_edit=true));
+grant select on table public.chaldea_xp to anon, authenticated;
+grant insert, update on table public.chaldea_xp to authenticated;
