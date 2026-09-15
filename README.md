@@ -1,39 +1,43 @@
-# Chaldea Command · V8
+# 📊 Stat Chaldea
 
-GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
+**Stat Chaldea** est une application web privée/personnelle conçue spécifiquement pour suivre, comparer et analyser les statistiques de jeu (*Fate/Grand Order*) pour un groupe restreint de 3 personnes (mes deux amis et moi-même).
 
-## Data architecture
+---
 
-- `data/initial-state.json` is the local seed/snapshot only.
-- Supabase `chaldea_stats` is the shared source of truth once cloud is configured.
-- Atlas Academy NA is used for the live Servant catalogue, stats and artworks. The NA API is queried separately from JP.
-- `data/welfare-ids.json` stores the explicit Welfare list because Welfare status is not safe to infer only from rarity.
+## 🎯 Objectif du projet
 
-## Supabase
+Ce projet a été développé sur mesure pour répondre à nos besoins spécifiques de suivi :
+- Centraliser et comparer les statistiques de nos comptes respectifs.
+- Suivre la progression individuelle et collective (Servants débloqués, niveaux de compétences, matériaux).
+- Offrir une interface simple et personnalisée pour visualiser l'ensemble des données de notre groupe.
 
-Run **only** `supabase.sql` in the SQL editor. Do not upload `initial-state.json` to Supabase.
+---
 
-The authenticated player can edit only their own `player_key`. Public/other users can read the roster.
+## ✨ Fonctionnalités
 
-Put the project URL and browser-safe public key in `config.js`.
+- 👥 **Suivi multi-profils (3 personnes) :** Affichage et comparaison directe des données entre amis.
+- 📈 **Visualisation des statistiques :** Tableaux de bord et graphiques de progression adaptés à nos objectifs de jeu.
+- 🔍 **Filtres & Tri :** Consultation rapide des compétences, raretés et ressources accumulées par chacun.
+- 💾 **Gestion des données :** Chargement et sauvegarde rapide des profils.
 
-## First initialization
+---
 
-1. Create the three Supabase Auth users.
-2. Link them to `julien`, `yanis`, and `attmann` in `chaldea_members`.
-3. Log in on the site.
-4. The editor can import the initial snapshot into Supabase.
+## 🛠️ Technologies utilisées
 
-## Rayshift support synchronization
+- **HTML5 / CSS3 :** Mise en page responsive et design sur mesure.
+- **JavaScript (ES6+) :** Traitement des données et dynamique de l'interface.
 
-Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app cannot reliably read the HTML cross-origin. This V8 therefore does not pretend an iframe is a data API.
+---
 
-`supabase/functions/rayshift-proxy/index.ts` is the server-side proxy skeleton. Deploy it as a Supabase Edge Function, then set `rayshiftProxyUrl` in `config.js`. The client can then fetch the public Rayshift HTML through your own endpoint and render the six support decks in its own UI.
+## 🚀 Accès & Utilisation
 
-## QA
+L'application est hébergée sur GitHub Pages pour nous permettre d'y accéder facilement depuis n'importe quel appareil :
+👉 **[Accéder à Stat Chaldea](https://julienh77.github.io/Stat_Chaldea/)**
 
-`app.js` is checked with `node --check` before packaging.
+*Note : Cet outil est principalement destiné à notre usage privé, mais le code source reste librement accessible sur ce dépôt.*
 
+---
 
-## V13 data reset
-Yanis and Attmann initial snapshots are rebuilt from the supplied FGOyanis/FGOattmann sheets from scratch. Only explicit NP/Skill entries are imported; old incorrect level/bond/grail/append/coin values for these two players are not retained.
+## 👤 Auteur & Contexte
+
+Projet personnel développé par [JulienH77](https://github.com/JulienH77) pour une utilisation au sein de notre groupe de trois amis.
