@@ -33,3 +33,7 @@ Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app 
 ## QA
 
 `app.js` is checked with `node --check` before packaging.
+
+
+## V13 data reset
+Yanis and Attmann initial snapshots are rebuilt from the supplied FGOyanis/FGOattmann sheets from scratch. Only explicit NP/Skill entries are imported; old incorrect level/bond/grail/append/coin values for these two players are not retained.
