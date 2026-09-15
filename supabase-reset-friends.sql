@@ -1,293 +1,288 @@
--- ONE-TIME RESET: replace erroneous Yanis/Attmann cloud stats with the two fresh Excel exports.
--- Run after your normal supabase.sql. This only touches yanis and attmann.
-begin;
+-- Clean migration for Yanis + Attmann. Julien is untouched.
 delete from public.chaldea_stats where player_key in ('yanis','attmann');
-insert into public.chaldea_stats(player_key,servant_id,level,bond,grail,fou_hp,fou_atk,servant_coins,np,skills,append_skills) values
-('yanis',2,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',4,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',5,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',6,NULL,NULL,NULL,NULL,NULL,NULL,1,'{6,4,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',10,NULL,NULL,NULL,NULL,NULL,NULL,1,'{5,5,7}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',90,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',91,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',101,NULL,NULL,NULL,NULL,NULL,NULL,1,'{7,7,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',121,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',123,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',138,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',165,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',176,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',213,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,NULL}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',227,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',245,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',264,NULL,NULL,NULL,NULL,NULL,NULL,5,'{6,6,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',278,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',293,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',301,NULL,NULL,NULL,NULL,NULL,NULL,5,'{8,6,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',302,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',310,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',344,NULL,NULL,NULL,NULL,NULL,NULL,2,'{6,6,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',354,NULL,NULL,NULL,NULL,NULL,NULL,2,'{6,6,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',405,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',11,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',14,NULL,NULL,NULL,NULL,NULL,NULL,2,'{9,1,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',60,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',69,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,5,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',122,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',137,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,9,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',142,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',184,NULL,NULL,NULL,NULL,NULL,NULL,2,'{6,6,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',197,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',200,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',207,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',212,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',271,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',272,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',286,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',311,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',325,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',18,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',78,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,7,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',85,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',87,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',140,NULL,NULL,NULL,NULL,NULL,NULL,2,'{9,9,2}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',141,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,3,7}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',146,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',183,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',193,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',196,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',214,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',228,NULL,NULL,NULL,NULL,NULL,NULL,4,'{9,7,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',232,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',252,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',266,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',280,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',283,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',288,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',300,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',347,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',29,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,9,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',30,NULL,NULL,NULL,NULL,NULL,NULL,3,'{7,7,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',73,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',94,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',115,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',118,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',182,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,3,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',205,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',206,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',211,NULL,NULL,NULL,NULL,NULL,NULL,5,'{6,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',253,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',263,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,8,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',296,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',315,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,10,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',332,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',366,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',387,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',401,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',37,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',62,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',74,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',100,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',111,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',113,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',120,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,8,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',136,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',145,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',150,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',175,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',192,NULL,NULL,NULL,NULL,NULL,NULL,2,'{8,7,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',194,NULL,NULL,NULL,NULL,NULL,NULL,1,'{5,5,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',201,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',208,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',215,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',225,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',236,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',284,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',319,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',330,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,9,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',358,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',404,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',41,NULL,NULL,NULL,NULL,NULL,NULL,3,'{9,9,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',46,NULL,NULL,NULL,NULL,NULL,NULL,4,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',92,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',109,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',133,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,5,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',154,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',159,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',170,NULL,NULL,NULL,NULL,NULL,NULL,4,'{9,1,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',177,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',185,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',189,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',235,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',243,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',304,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',314,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',361,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',408,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',47,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',48,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',52,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',58,NULL,NULL,NULL,NULL,NULL,NULL,7,'{5,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',82,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',89,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',97,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,1,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',116,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',162,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',171,NULL,NULL,NULL,NULL,NULL,NULL,4,'{4,6,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',219,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,6,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',226,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',247,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',261,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',309,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',345,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',386,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',414,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',59,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',173,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',233,NULL,NULL,NULL,NULL,NULL,NULL,5,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',242,NULL,NULL,NULL,NULL,NULL,NULL,1,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',265,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',292,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',320,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',357,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',364,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',96,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',147,NULL,NULL,NULL,NULL,NULL,NULL,1,'{5,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',158,NULL,NULL,NULL,NULL,NULL,NULL,4,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',328,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',356,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',388,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',407,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',166,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',220,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',244,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',351,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',190,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',224,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',336,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',338,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',369,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',195,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',289,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',308,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',389,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',316,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',335,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,8,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',353,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('yanis',377,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}');
-insert into public.chaldea_stats(player_key,servant_id,level,bond,grail,fou_hp,fou_atk,servant_coins,np,skills,append_skills) values
-('attmann',3,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,10,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',4,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',6,NULL,NULL,NULL,NULL,NULL,NULL,3,'{4,0,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',8,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',10,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',68,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',76,NULL,NULL,NULL,NULL,NULL,NULL,1,'{6,4,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',101,NULL,NULL,NULL,NULL,NULL,NULL,2,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',165,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',187,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,9,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',227,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,10,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',245,NULL,NULL,NULL,NULL,NULL,NULL,3,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',264,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',278,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',293,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,6,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',298,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',11,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,8,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',14,NULL,NULL,NULL,NULL,NULL,NULL,2,'{9,4,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',60,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',69,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',84,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',129,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,6,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',137,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',157,NULL,NULL,NULL,NULL,NULL,NULL,3,'{6,9,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',180,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',184,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',197,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',200,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',207,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',269,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',271,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,10,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',272,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',18,NULL,NULL,NULL,NULL,NULL,NULL,7,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',78,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',85,NULL,NULL,NULL,NULL,NULL,NULL,2,'{4,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',140,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',141,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',146,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',181,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',183,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',193,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',232,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',252,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,9,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',279,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',283,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',288,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',29,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',30,NULL,NULL,NULL,NULL,NULL,NULL,3,'{4,4,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',66,NULL,NULL,NULL,NULL,NULL,NULL,4,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',73,NULL,NULL,NULL,NULL,NULL,NULL,3,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',94,NULL,NULL,NULL,NULL,NULL,NULL,2,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',99,NULL,NULL,NULL,NULL,NULL,NULL,2,'{9,10,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',115,NULL,NULL,NULL,NULL,NULL,NULL,5,'{9,10,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',132,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,4,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',179,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',182,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',211,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,1,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',241,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',263,NULL,NULL,NULL,NULL,NULL,NULL,1,'{6,6,6}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',274,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',37,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',61,NULL,NULL,NULL,NULL,NULL,NULL,5,'{2,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',62,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',67,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',74,NULL,NULL,NULL,NULL,NULL,NULL,6,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',100,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',111,NULL,NULL,NULL,NULL,NULL,NULL,5,'{6,5,5}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',113,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',120,NULL,NULL,NULL,NULL,NULL,NULL,7,'{10,8,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',145,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',150,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',192,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',194,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',201,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',208,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',215,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',236,NULL,NULL,NULL,NULL,NULL,NULL,2,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',284,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',41,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',92,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',133,NULL,NULL,NULL,NULL,NULL,NULL,5,'{1,1,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',159,NULL,NULL,NULL,NULL,NULL,NULL,4,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',170,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',185,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',243,NULL,NULL,NULL,NULL,NULL,NULL,5,'{8,8,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',267,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',304,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',47,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',48,NULL,NULL,NULL,NULL,NULL,NULL,4,'{9,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',52,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',58,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',82,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',89,NULL,NULL,NULL,NULL,NULL,NULL,2,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',114,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',116,NULL,NULL,NULL,NULL,NULL,NULL,3,'{1,0,0}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',155,NULL,NULL,NULL,NULL,NULL,NULL,2,'{9,10,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',162,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',171,NULL,NULL,NULL,NULL,NULL,NULL,2,'{7,7,7}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',219,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,8,8}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',93,NULL,NULL,NULL,NULL,NULL,NULL,1,'{7,7,7}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',135,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',233,NULL,NULL,NULL,NULL,NULL,NULL,5,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',242,NULL,NULL,NULL,NULL,NULL,NULL,4,'{9,9,9}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',265,NULL,NULL,NULL,NULL,NULL,NULL,3,'{7,7,7}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',292,NULL,NULL,NULL,NULL,NULL,NULL,1,'{9,9,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',158,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',268,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',166,NULL,NULL,NULL,NULL,NULL,NULL,5,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',285,NULL,NULL,NULL,NULL,NULL,NULL,4,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',209,NULL,NULL,NULL,NULL,NULL,NULL,2,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',297,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',195,NULL,NULL,NULL,NULL,NULL,NULL,1,'{1,1,1}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',198,NULL,NULL,NULL,NULL,NULL,NULL,3,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',275,NULL,NULL,NULL,NULL,NULL,NULL,1,'{4,4,4}','{NULL,NULL,NULL,NULL,NULL}'),
-('attmann',295,NULL,NULL,NULL,NULL,NULL,NULL,1,'{10,10,10}','{NULL,NULL,NULL,NULL,NULL}');
-commit;
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',2,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',4,80,5,null,null,null,null,null,'[5,5,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',5,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',6,80,1,null,null,null,null,null,'[6,4,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',10,80,1,null,null,null,null,null,'[5,5,7]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',90,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',91,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',101,80,1,null,null,null,null,null,'[7,7,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',121,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',123,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',138,80,5,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',165,80,null,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',176,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',213,90,1,null,null,null,null,null,'[1,1,null]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',227,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',245,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',264,80,5,null,null,null,null,null,'[6,6,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',278,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',293,80,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',301,80,5,null,null,null,null,null,'[8,6,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',302,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',310,80,2,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',344,80,2,null,null,null,null,null,'[6,6,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',354,80,2,null,null,null,null,null,'[6,6,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',405,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',11,80,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',14,80,2,null,null,null,null,null,'[9,1,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',60,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',69,80,5,null,null,null,null,null,'[1,5,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',122,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',137,80,5,null,null,null,null,null,'[1,9,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',142,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',184,80,2,null,null,null,null,null,'[6,6,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',197,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',200,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',207,80,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',212,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',271,80,5,null,null,null,null,null,'[5,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',272,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',286,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',311,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',325,80,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',18,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',78,80,1,null,null,null,null,null,'[9,7,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',85,90,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',87,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',140,80,2,null,null,null,null,null,'[9,9,2]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',141,80,5,null,null,null,null,null,'[5,3,7]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',146,80,4,null,null,null,null,null,'[10,10,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',183,80,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',193,80,3,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',196,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',214,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',228,80,4,null,null,null,null,null,'[9,7,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',232,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',252,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',266,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',280,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',283,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',288,80,5,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',300,90,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',347,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',29,80,1,null,null,null,null,null,'[9,9,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',30,80,3,null,null,null,null,null,'[7,7,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',73,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',94,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',115,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',118,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',182,80,5,null,null,null,null,null,'[9,3,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',205,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',206,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',211,80,5,null,null,null,null,null,'[6,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',253,90,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',263,80,1,null,null,null,null,null,'[10,8,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',296,90,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',315,80,5,null,null,null,null,null,'[1,10,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',332,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',366,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',387,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',401,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',37,90,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',62,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',74,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',100,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',111,80,5,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',113,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',120,80,4,null,null,null,null,null,'[10,8,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',136,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',145,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',150,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',175,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',192,80,2,null,null,null,null,null,'[8,7,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',194,80,1,null,null,null,null,null,'[5,5,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',201,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',208,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',215,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',225,80,3,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',236,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',284,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',319,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',330,80,5,null,null,null,null,null,'[9,9,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',358,80,3,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',404,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',41,80,3,null,null,null,null,null,'[9,9,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',46,80,4,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',92,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',109,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',133,80,5,null,null,null,null,null,'[4,5,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',154,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',159,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',170,80,4,null,null,null,null,null,'[9,1,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',177,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',185,80,5,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',189,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',235,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',243,80,5,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',304,80,5,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',314,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',361,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',408,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',47,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',48,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',52,90,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',58,80,7,null,null,null,null,null,'[5,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',82,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',89,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',97,90,1,null,null,null,null,null,'[9,1,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',116,80,1,null,null,null,null,null,'[10,10,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',162,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',171,80,4,null,null,null,null,null,'[4,6,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',219,80,5,null,null,null,null,null,'[5,6,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',226,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',247,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',261,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',309,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',345,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',386,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',414,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',59,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',173,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',233,80,5,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',242,80,1,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',265,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',292,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',320,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',357,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',364,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',96,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',147,80,1,null,null,null,null,null,'[5,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',158,80,4,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',328,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',356,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',388,80,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',407,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',166,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',220,90,1,null,null,null,null,null,'[1,1,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',244,90,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',351,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',190,80,3,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',224,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',336,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',338,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',369,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',195,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',289,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',308,80,5,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',389,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',316,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',335,80,1,null,null,null,null,null,'[9,8,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',353,90,1,null,null,null,null,null,'[10,10,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('yanis',377,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',3,80,5,null,null,null,null,null,'[9,10,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',4,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',6,80,3,null,null,null,null,null,'[4,0,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',8,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',10,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',68,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',76,90,1,null,null,null,null,null,'[6,4,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',101,80,2,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',165,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',187,80,1,null,null,null,null,null,'[9,9,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',227,80,1,null,null,null,null,null,'[9,10,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',245,80,3,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',264,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',278,90,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',293,80,5,null,null,null,null,null,'[9,6,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',298,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',11,80,5,null,null,null,null,null,'[4,8,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',14,80,2,null,null,null,null,null,'[9,4,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',60,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',69,80,5,null,null,null,null,null,'[4,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',84,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',129,90,1,null,null,null,null,null,'[10,6,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',137,80,5,null,null,null,null,null,'[9,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',157,80,3,null,null,null,null,null,'[6,9,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',180,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',184,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',197,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',200,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',207,80,2,null,null,null,null,null,'[1,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',269,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',271,80,5,null,null,null,null,null,'[1,10,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',272,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',18,80,7,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',78,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',85,90,2,null,null,null,null,null,'[4,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',140,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',141,80,5,null,null,null,null,null,'[1,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',146,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',181,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',183,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',193,80,3,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',232,90,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',252,80,5,null,null,null,null,null,'[9,9,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',279,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',283,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',288,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',29,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',30,80,3,null,null,null,null,null,'[4,4,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',66,80,4,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',73,80,3,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',94,80,2,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',99,90,2,null,null,null,null,null,'[9,10,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',115,80,5,null,null,null,null,null,'[9,10,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',132,80,1,null,null,null,null,null,'[9,4,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',179,90,2,null,null,null,null,null,'[10,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',182,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',211,80,5,null,null,null,null,null,'[4,1,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',241,90,1,null,null,null,null,null,'[1,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',263,80,1,null,null,null,null,null,'[6,6,6]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',274,90,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',37,90,2,null,null,null,null,null,'[10,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',61,80,5,null,null,null,null,null,'[2,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',62,90,3,null,null,null,null,null,'[10,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',67,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',74,80,6,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',100,80,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',111,80,5,null,null,null,null,null,'[6,5,5]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',113,90,1,null,null,null,null,null,'[10,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',120,80,7,null,null,null,null,null,'[10,8,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',145,80,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',150,90,1,null,null,null,null,null,'[10,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',192,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',194,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',201,90,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',208,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',215,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',236,80,2,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',284,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',41,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',92,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',133,80,5,null,null,null,null,null,'[1,1,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',159,80,4,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',170,80,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',185,80,1,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',243,80,5,null,null,null,null,null,'[8,8,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',267,80,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',304,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',47,80,2,null,null,null,null,null,'[10,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',48,80,4,null,null,null,null,null,'[9,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',52,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',58,80,3,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',82,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',89,80,2,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',114,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',116,80,3,null,null,null,null,null,'[1,0,0]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',155,90,2,null,null,null,null,null,'[9,10,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',162,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',171,80,2,null,null,null,null,null,'[7,7,7]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',219,80,5,null,null,null,null,null,'[4,8,8]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',93,90,1,null,null,null,null,null,'[7,7,7]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',135,80,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',233,80,5,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',242,80,4,null,null,null,null,null,'[9,9,9]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',265,90,3,null,null,null,null,null,'[7,7,7]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',292,90,1,null,null,null,null,null,'[9,9,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',158,80,1,null,null,null,null,null,'[4,4,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',268,90,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',166,80,5,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',285,90,4,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',209,90,2,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',297,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',195,90,1,null,null,null,null,null,'[1,1,1]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',198,90,3,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',275,90,1,null,null,null,null,null,'[4,4,4]'::jsonb,'[null,null,null,null,null]'::jsonb);
+insert into public.chaldea_stats(player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills) values('attmann',295,90,1,null,null,null,null,null,'[10,10,10]'::jsonb,'[null,null,null,null,null]'::jsonb);
