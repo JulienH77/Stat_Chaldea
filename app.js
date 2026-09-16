@@ -130,15 +130,13 @@ function commandCards(d, r) {
   const arr = Array.isArray(d?.cards) ? d.cards : [];
   const code = v => {
     const raw = String(v ?? '').trim().toUpperCase();
-    if (raw === '1' || raw === 'B' || raw === 'BUSTER') return 'B';
-    if (raw === '2' || raw === 'A' || raw === 'ARTS') return 'A';
-    if (raw === '3' || raw === 'Q' || raw === 'QUICK') return 'Q';
+     if(raw==='1'||raw==='A'||raw==='ARTS') return 'A';
+     if(raw==='2'||raw==='B'||raw==='BUSTER') return 'B';
+     if(raw==='3'||raw==='Q'||raw==='QUICK') return 'Q';
     return null;
   };
   const deck = arr.map(code).filter(Boolean).slice(0, 5);
-  if (deck.length !== 5) return [];
-  const order = { Q: 0, A: 1, B: 2 };
-  return deck.sort((a, b) => order[a] - order[b]);
+  return deck.length === 5 ? deck : [];
 }
 function npIcon(){return fandomAsset(NP_LEVEL_ICON);}
 
