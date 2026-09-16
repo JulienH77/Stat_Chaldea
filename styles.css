@@ -144,3 +144,5 @@
 @media(max-width:1050px){.xp-dashboard-grid{grid-template-columns:1fr}.xp-side{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.xp-command-head{display:grid}.xp-goal-pills{justify-content:flex-start}.xp-level-choice{grid-template-columns:1fr;max-width:none}.xp-arrow{transform:rotate(90deg)}.xp-card-results{grid-template-columns:1fr 1fr}.xp-side{grid-template-columns:1fr}.xp-milestones.modern{grid-template-columns:1fr}}
 .detail-class img{width:38px;height:38px}
+
+.detail-class .class-icon-img{width:48px!important;height:48px!important}.detail-class{gap:12px}
