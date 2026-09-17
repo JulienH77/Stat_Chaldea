@@ -296,7 +296,7 @@ function renderXp(){
     const row=inv[c];
     const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
     const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);
-    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other"></span>':classImg(c)}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`;
+    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other">◆</span>':classImg(c)}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`;
   }).join('');
   const grand=[5,4,3].map(st=>XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0));
   $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${grand.map(v=>`<th>${fmtNum(v)}</th>`).join('')}<th>${xpFmt(totals.random)}</th><th>${xpFmt(totals.classBonus)}</th></tr>`;
