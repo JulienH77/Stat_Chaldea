@@ -1,4 +1,4 @@
-# Chaldea Command · V8
+# Chaldea Command · V17
 
 GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
 
@@ -41,3 +41,12 @@ Yanis and Attmann initial snapshots are rebuilt from the supplied FGOyanis/FGOat
 
 ## V14 friend-data reset
 Yanis and Attmann are rebuilt strictly from columns ID, servant, NP, Skill 1, Skill 2, Skill 3 in their current Excel exports. `supabase-reset-friends.sql` clears previous bad cloud rows and inserts the fresh values.
+
+
+## V17 updates
+- Overview skill scope toggle: ALL or GOLD (4★/5★ + Welfare), and the selected scope updates skill averages.
+- Overview collection ring no longer repeats the percentage inside the ring.
+- NA roster sync now prefers Atlas Academy's static `export/NA/basic_servant.json` so low-rarity/support Servants are not lost when their NP does not deal damage.
+- Compare keeps the selected Showdown Servant across refreshes, removes possession/coins rows, adds skills + append skill blocks, and uses Julien red, Yanis blue, Attmann green in the radar.
+- Added a one-click "Enregistrer toutes mes données" action in the authenticated editor account dialog for Servant stats, XP inventory and support Friend ID.
+- No database schema changes are introduced in V17; do not rerun SQL just for this release.

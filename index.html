@@ -2,6 +2,7 @@
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#eef2f6"><title>Chaldea Command</title>
+<link rel="icon" href="chaldea.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -30,9 +31,9 @@
   <div class="page-heading"><div><span class="eyebrow">MASTER PROFILE</span><h1 id="heroMaster">Julien</h1><p>Ta collection NA, ta progression et les chiffres qui comptent vraiment.</p></div><div class="hero-badge"><span id="introOwned">0</span><small>SERVANTS POSSÉDÉS</small><em>NA / LIVE</em></div></div>
   <div class="overview-grid">
     <section class="panel collection-panel"><div class="panel-head"><div><span class="eyebrow">COLLECTION</span><h2>Raretés possédées</h2></div><span class="panel-tag">HORS MASH</span></div><div id="rarityDisplay" class="rarity-display"></div></section>
-    <section class="panel skills-panel"><div class="panel-head"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="avg-pill"><strong id="skillsAverage">—</strong><span>/10</span></div></div><div id="skillBars" class="skill-bars"></div></section>
+    <section class="panel skills-panel"><div class="panel-head"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="skills-head-actions"><div class="scope-switch" id="skillScopeToggle"><button data-skill-scope="all" class="active">ALL</button><button data-skill-scope="gold">GOLD</button></div><div class="avg-pill"><strong id="skillsAverage">—</strong><span>/10</span></div></div></div><div id="skillBars" class="skill-bars"></div></section>
     <section class="panel markers-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT MARKERS</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="marker-grid"></div></section>
-    <section class="panel trend-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT READOUT</span><h2>Collection 4★ + 5★</h2></div><div class="ring" id="collectionRing"><span>0%</span></div></div><div class="trend-copy"><strong id="collectionPct">0%</strong><span>des Servants 4★ / 5★ NA obtenus</span></div><div class="mini-bars" id="miniBars"></div></section>
+    <section class="panel trend-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT READOUT</span><h2>Collection 4★ + 5★</h2></div><div class="ring" id="collectionRing" aria-hidden="true"></div></div><div class="trend-copy"><strong id="collectionPct">0%</strong><span>des Servants 4★ / 5★ NA obtenus</span></div><div class="mini-bars" id="miniBars"></div></section>
   </div>
 </section>
 
@@ -71,7 +72,7 @@
     <div class="xp-level-choice">
       <label class="xp-level-card"><span>NIVEAU ACTUEL</span><strong>1</strong><input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1" inputmode="numeric"></label>
       <div class="xp-arrow">→</div>
-      <label class="xp-level-card target"><span>NIVEAU SOUHAITÉ</span><strong>120</strong><select id="xpTargetLevel" class="xp-input beige"><option value="60">60</option><option value="70">70</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="120" selected>120</option></select></label>
+      <label class="xp-level-card target"><span>NIVEAU SOUHAITÉ</span><strong>120</strong><input id="xpTargetLevel" class="xp-input beige" type="number" min="1" max="120" value="120" inputmode="numeric"></label>
     </div>
     <div id="xpTargetSummary" class="xp-target-summary xp-result"></div>
   </section>
