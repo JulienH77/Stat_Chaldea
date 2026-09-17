@@ -20,7 +20,7 @@ const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=(state.roster||[]).filter(r=>!FUTURE_NAMES.has(norm(r.name)));
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold';
-let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0, supportPlayer='julien';
+let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
@@ -40,9 +40,33 @@ const localKey='chaldea-v16-cache';
 function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
 function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
 function fandomAsset(name){return FANDOM_URL+encodeURIComponent(name)}
-function classImg(c){const k=classKey(c);const f=FANDOM[k]||FANDOM.Saber;const fallback=`Class-${k.replace(/ /g,'')}-Gold.png`;return `<img class="class-icon-img" src="${fandomAsset(f)}" alt="${k}" loading="eager" onerror="if(this.dataset.fb){this.style.display='none'}else{this.dataset.fb='1';this.src='${fandomAsset(fallback)}'}">`}
-function cardImg(t){return `<img src="${fandomAsset(FANDOM[t])}" alt="${t}" loading="eager">`}
-function grailImg(){return `<img class="grail-thumb" src="${fandomAsset(FANDOM.grail)}" alt="Graal" loading="eager" onerror="this.style.display='none'">`}
+const fandomResolved=new Map();
+async function resolveFandomImage(img,file){
+  if(!img||!file)return;
+  img.referrerPolicy='no-referrer';
+  try{
+    if(fandomResolved.has(file)){img.onerror=null;img.src=fandomResolved.get(file);return}
+    const api='https://fategrandorder.fandom.com/api.php?action=query&prop=imageinfo&iiprop=url&format=json&origin=*&titles='+encodeURIComponent('File:'+file);
+    const res=await fetch(api,{cache:'force-cache'});
+    if(!res.ok)throw new Error('Fandom API '+res.status);
+    const json=await res.json();
+    const pages=json?.query?.pages||{};
+    const page=Object.values(pages)[0];
+    const url=page?.imageinfo?.[0]?.url;
+    if(!url)throw new Error('Fichier Fandom introuvable');
+    fandomResolved.set(file,url);
+    img.onerror=null;
+    img.src=url;
+  }catch(e){
+    if(img.dataset.hiddenAfterFallback)return;
+    img.dataset.hiddenAfterFallback='1';
+    img.style.display='none';
+  }
+}
+function fandomImgAttrs(file){return `data-fandom-file="${file}" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"`}
+function classImg(c){const k=classKey(c);const f=FANDOM[k]||FANDOM.Saber;return `<img class="class-icon-img" src="${fandomAsset(f)}" alt="${k}" loading="eager" ${fandomImgAttrs(f)}>`}
+function cardImg(t){const f=FANDOM[t];return `<img class="command-icon-img" src="${fandomAsset(f)}" alt="${t}" loading="eager" ${fandomImgAttrs(f)}>`}
+function grailImg(){const f=FANDOM.grail;return `<img class="grail-thumb" src="${fandomAsset(f)}" alt="Graal" loading="eager" ${fandomImgAttrs(f)}>`}
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.rarity==='Welfare'||WELFARE_NAMES.has(norm(r.name))}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
@@ -139,8 +163,8 @@ function commandCards(d,r){
   const arr=Array.isArray(d?.cards)?d.cards:[];
   const code=v=>{
     const raw=String(v??'').trim().toUpperCase();
-    if(raw==='1'||raw==='B'||raw==='BUSTER')return'B';
-    if(raw==='2'||raw==='A'||raw==='ARTS')return'A';
+    if(raw==='1'||raw==='A'||raw==='ARTS')return'A';
+    if(raw==='2'||raw==='B'||raw==='BUSTER')return'B';
     if(raw==='3'||raw==='Q'||raw==='QUICK')return'Q';
     return null;
   };
@@ -161,7 +185,7 @@ function openModalBase(r,d,urls,idx){
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
- const npHtml=can?`<div class="np-edit-wrap"><img src="${ni}" alt="NP"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row"><img src="${ni}" alt="NP"><b>${npRead}</b></div>`;
+ const npHtml=can?`<div class="np-edit-wrap"><img data-fandom-file="${NP_LEVEL_ICON}" src="${ni}" alt="NP" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row"><img data-fandom-file="${NP_LEVEL_ICON}" src="${ni}" alt="NP" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"><b>${npRead}</b></div>`;
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
@@ -180,10 +204,48 @@ function compareCount(p,pred=()=>true){return goldUniverse().filter(r=>pred(r)&&
 function compareBond10(p){return compareCount(p,r=>Number(stats(p,r.id).bond)>=10)}
 function compareLv120(p){return compareCount(p,r=>Number(stats(p,r.id).level)===120)}
 function compareStats(p){return{owned:goldOwned(p),five:compareCount(p,r=>rarityNum(r.rarity)===5&&!isWelfare(r)),four:compareCount(p,r=>rarityNum(r.rarity)===4&&!isWelfare(r)),wf:compareCount(p,r=>isWelfare(r)),a1:compareAverage(p,0),a2:compareAverage(p,1),a3:compareAverage(p,2),lvl120:compareLv120(p),bond:compareBond10(p),np5:np5Count(p),np5Pct:np5Pct(p)}}
-function renderCompare(){const vals=PLAYERS.map(p=>({p,...compareStats(p)})),tones=['#c6535f','#4f78b7','#579b76'];$('#compareTop').innerHTML=vals.map(v=>`<article class="person-card"><div class="person-name">${PLAYER_LABELS[v.p]}</div><div class="person-score">${v.owned}</div><small class="person-label">SERVANTS 4★ / 5★ / WELFARE POSSÉDÉS</small><div class="collection-note"><span>COLLECTION</span><b>${v.owned}</b><small>${v.np5Pct.toFixed(1)}% NP 5</small></div><div class="person-meta"><span><small>5★</small><b>${v.five}</b></span><span><small>4★</small><b>${v.four}</b></span><span><small>WELFARE</small><b>${v.wf}</b></span><span><small>SKILL 1 MOY.</small><b>${v.a1.toFixed(1)}</b></span><span><small>SKILL 2 MOY.</small><b>${v.a2.toFixed(1)}</b></span><span><small>SKILL 3 MOY.</small><b>${v.a3.toFixed(1)}</b></span><span><small>BOND 10+</small><b>${v.bond}</b></span><span><small>LV 120</small><b>${v.lvl120}</b></span><span><small>NP 5</small><b>${v.np5Pct.toFixed(1)}%</b></span></div></article>`).join('');initCompareNames();renderShowdown();renderRadar(tones)}
-function initCompareNames(){const r=state.roster.filter(isVisible);$('#compareNames').innerHTML=r.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');const cur=state.roster.find(x=>Number(x.id)===Number(compareFocusId)&&isVisible(x));if(!cur){const caster=state.roster.find(x=>norm(x.name)==='artoria caster'&&isVisible(x));compareFocusId=caster?.id??284}}
-function renderShowdown(){const r=state.roster.find(x=>Number(x.id)===Number(compareFocusId)&&isVisible(x))||state.roster.find(x=>norm(x.name)==='artoria caster'&&isVisible(x))||state.roster.find(isVisible);if(!r)return;compareFocusId=r.id;const search=$('#compareSearch');if(search&&search.value!==r.name)search.value=r.name;$('#compareFocusTitle').textContent=r.name;$('#compareCards').innerHTML=PLAYERS.map(p=>{const s=stats(p,r.id),own=isOwned(p,r);return `<article class="duel-card ${own?'':'duel-missing'}"><div class="duel-hero" id="duel-${p}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="loader">ATLAS</div><div class="duel-name">${PLAYER_LABELS[p]}</div></div><div class="duel-body"><div class="duel-row"><span>Niveau</span><strong>${displayLevel(p,r,s)}</strong></div><div class="duel-row"><span>NP</span><strong>${npDisplay(s.np,true)}</strong></div><div class="duel-row"><span>Bond</span><strong>${s.bond??'—'}</strong></div><div class="skill-squares showdown-levels">${(s.skills||[]).slice(0,3).map((v,i)=>`<div class="square"><span>S${i+1}</span><b>${v??'—'}</b></div>`).join('')}</div><div class="append-squares showdown-levels">${(s.appendSkills||[]).slice(0,5).map((v,i)=>`<div class="square"><span>A${i+1}</span><b>${v??'—'}</b></div>`).join('')}</div></div></article>`}).join('');PLAYERS.forEach(async p=>{const d=await atlasDetail(r);const u=imageList(d)[0]||guessImage(r.atlasId);const e=$(`#duel-${p}`);if(e&&u){const img=new Image();img.onload=()=>{if(!e.isConnected)return;e.innerHTML=`${isOwned(p,r)?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<img src="${u}" alt=""><div class="duel-name">${PLAYER_LABELS[p]}</div>`};img.src=u}})}
-function renderRadar(colors){const labels=['Collection 4★/5★/Welfare','Skill 1','Skill 2','Skill 3','NP 5','Bond 10+','Lv 120'];const points=labels.length,cx=310,cy=260,rad=165;const coords=i=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]};const axes=labels.map((l,i)=>{const [x,y]=coords(i),a=-Math.PI/2+i*(Math.PI*2/points),tx=cx+Math.cos(a)*(rad+34),ty=cy+Math.sin(a)*(rad+34);return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#cfd8e1"/><text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${l}</text>`}).join('');const rings=[.25,.5,.75,1].map(v=>`<polygon points="${Array.from({length:points},(_,i)=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad*v,cy+Math.sin(a)*rad*v].join(',')}).join(' ')}" fill="none" stroke="#dfe5eb"/>`).join('');const all=PLAYERS.map((p,i)=>{const s=compareStats(p);const vals=[Math.min(1,s.owned/Math.max(goldUniverse().length,1)),s.a1/10,s.a2/10,s.a3/10,Math.min(1,s.np5/goldUniverse().length),Math.min(1,s.bond/Math.max(goldUniverse().length,1)),Math.min(1,s.lvl120/Math.max(goldUniverse().length,1))];const pts=radarPolygon(vals,cx,cy,rad);const dots=vals.map((v,j)=>{const a=-Math.PI/2+j*(Math.PI*2/points);return `<circle cx="${cx+Math.cos(a)*rad*v}" cy="${cy+Math.sin(a)*rad*v}" r="5" fill="${colors[i]}" class="radar-point"/>`}).join('');return{p,pts,dots,color:colors[i]}});$('#radarLegend').innerHTML=all.map(x=>`<span class="legend-item"><i class="legend-dot" style="background:${x.color}"></i><b>${PLAYER_LABELS[x.p]}</b></span>`).join('');$('#compareRadar').innerHTML=`<svg class="radar-svg" viewBox="0 0 620 530" role="img">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg>`}
+function renderCompare(){
+ const vals=PLAYERS.map(p=>({p,...compareStats(p)})),tones=['#c6535f','#4f78b7','#579b76'];
+ $('#compareTop').innerHTML=vals.map(v=>`<article class="person-card"><div class="person-name">${PLAYER_LABELS[v.p]}</div><div class="person-score">${v.owned}</div><small class="person-label">SERVANTS 4★ / 5★ / WELFARE POSSÉDÉS</small><div class="collection-note"><span>COLLECTION</span><b>${v.owned}</b><small>${v.np5Pct.toFixed(1)}% NP 5</small></div><div class="person-meta"><span><small>5★</small><b>${v.five}</b></span><span><small>4★</small><b>${v.four}</b></span><span><small>WELFARE</small><b>${v.wf}</b></span><span><small>SKILL 1 MOY.</small><b>${v.a1.toFixed(1)}</b></span><span><small>SKILL 2 MOY.</small><b>${v.a2.toFixed(1)}</b></span><span><small>SKILL 3 MOY.</small><b>${v.a3.toFixed(1)}</b></span><span><small>BOND 10+</small><b>${v.bond}</b></span><span><small>LV 120</small><b>${v.lvl120}</b></span><span><small>NP 5</small><b>${v.np5Pct.toFixed(1)}%</b></span></div></article>`).join('');
+ initCompareNames();
+ renderShowdown(false);
+ renderRadar(tones);
+}
+function initCompareNames(){
+ const r=state.roster.filter(isVisible);
+ $('#compareNames').innerHTML=r.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');
+ const cur=state.roster.find(x=>Number(x.id)===Number(compareFocusId)&&isVisible(x));
+ if(!cur){const caster=state.roster.find(x=>norm(x.name)==='artoria caster'&&isVisible(x));compareFocusId=caster?.id??284;}
+}
+function renderShowdown(force=false){
+ const r=state.roster.find(x=>Number(x.id)===Number(compareFocusId)&&isVisible(x))||state.roster.find(x=>norm(x.name)==='artoria caster'&&isVisible(x))||state.roster.find(isVisible);
+ if(!r)return;
+ if(!force && Number(showdownRenderedId)===Number(r.id) && $('#compareCards')?.children.length) return;
+ compareFocusId=r.id;
+ showdownRenderedId=r.id;
+ const token=++showdownRenderToken;
+ const search=$('#compareSearch');
+ if(search&&search.value!==r.name)search.value=r.name;
+ $('#compareFocusTitle').textContent=r.name;
+ $('#compareCards').innerHTML=PLAYERS.map(p=>{const s=stats(p,r.id),own=isOwned(p,r);return `<article class="duel-card ${own?'':'duel-missing'}"><div class="duel-hero" id="duel-${p}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="loader">ATLAS</div><div class="duel-name">${PLAYER_LABELS[p]}</div></div><div class="duel-body"><div class="duel-row"><span>Niveau</span><strong>${displayLevel(p,r,s)}</strong></div><div class="duel-row"><span>NP</span><strong>${npDisplay(s.np,true)}</strong></div><div class="duel-row"><span>Bond</span><strong>${s.bond??'—'}</strong></div><div class="skill-squares showdown-levels">${(s.skills||[]).slice(0,3).map((v,i)=>`<div class="square"><span>S${i+1}</span><b>${v??'—'}</b></div>`).join('')}</div><div class="append-squares showdown-levels">${(s.appendSkills||[]).slice(0,5).map((v,i)=>`<div class="square"><span>A${i+1}</span><b>${v??'—'}</b></div>`).join('')}</div></div></article>`}).join('');
+ const dPromise=atlasDetail(r);
+ dPromise.then(d=>{const u=imageList(d)[0]||guessImage(r.atlasId);PLAYERS.forEach(p=>{const e=$(`#duel-${p}`);if(!e||!u)return;const img=new Image();img.referrerPolicy='no-referrer';img.decoding='async';img.onload=()=>{if(token!==showdownRenderToken||!e.isConnected)return;e.innerHTML=`${isOwned(p,r)?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}`;e.appendChild(img);const label=document.createElement('div');label.className='duel-name';label.textContent=PLAYER_LABELS[p];e.appendChild(label)};img.onerror=()=>{};img.src=u;});});
+}
+function radarPolygon(values,cx,cy,rad){
+ const n=values.length||1;
+ return values.map((v,i)=>{const safe=Math.max(0,Math.min(1,Number(v)||0));const a=-Math.PI/2+i*(Math.PI*2/n);return `${cx+Math.cos(a)*rad*safe},${cy+Math.sin(a)*rad*safe}`;}).join(' ');
+}
+function renderRadar(colors){
+ const el=$('#compareRadar');if(!el)return;
+ const labels=['Collection 4★/5★/Welfare','Skill 1','Skill 2','Skill 3','NP 5','Bond 10+','Lv 120'];
+ const points=labels.length,cx=310,cy=260,rad=165;
+ const coords=i=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]};
+ const axes=labels.map((l,i)=>{const [x,y]=coords(i),a=-Math.PI/2+i*(Math.PI*2/points),tx=cx+Math.cos(a)*(rad+34),ty=cy+Math.sin(a)*(rad+34);return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#cfd8e1"/><text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${l}</text>`}).join('');
+ const rings=[.25,.5,.75,1].map(v=>`<polygon points="${Array.from({length:points},(_,i)=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad*v,cy+Math.sin(a)*rad*v].join(',')}).join(' ')}" fill="none" stroke="#dfe5eb"/>`).join('');
+ const all=PLAYERS.map((p,i)=>{const s=compareStats(p);const den=Math.max(goldUniverse().length,1);const vals=[Math.min(1,s.owned/den),s.a1/10,s.a2/10,s.a3/10,Math.min(1,s.np5/den),Math.min(1,s.bond/den),Math.min(1,s.lvl120/den)];const pts=radarPolygon(vals,cx,cy,rad);const dots=vals.map((v,j)=>{const a=-Math.PI/2+j*(Math.PI*2/points);return `<circle cx="${cx+Math.cos(a)*rad*v}" cy="${cy+Math.sin(a)*rad*v}" r="5" fill="${colors[i]}" class="radar-point"/>`}).join('');return{p,pts,dots,color:colors[i]}});
+ $('#radarLegend').innerHTML=all.map(x=>`<span class="legend-item"><i class="legend-dot" style="background:${x.color}"></i><b>${PLAYER_LABELS[x.p]}</b></span>`).join('');
+ el.innerHTML=`<svg class="radar-svg" viewBox="0 0 620 530" role="img">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg>`;
+}
 function renderSupports(){supportPlayer=currentPlayer;const fid=supportLocal[supportPlayer]?.friendId||'';$('#supportFriendId').value=fid;$('#rayshiftLink').href=fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup';$('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');$$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});const frame=$('#rayFrameWrap');if(fid){frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>Friend ID ${fid}</span></div><p>Le profil Rayshift est public, mais son contenu ne peut pas être lu directement par GitHub Pages à cause des restrictions cross-origin. Le site est prêt à recevoir un proxy Supabase pour importer les 6 decks et les afficher ici sans iframe.</p><a class="source-btn" href="https://rayshift.io/na/${fid.replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`}else{frame.innerHTML='<div class="empty-state"><strong>Aucun Friend ID</strong><span>Ajoute le Friend ID NA pour préparer la synchronisation.</span></div>'}const lists=Array.from({length:6},(_,i)=>({name:`${i<3?'Normal':'Event'} ${i%3+1}`,event:i>=3}));$('#supportLists').innerHTML=lists.map((l,i)=>`<article class="support-list"><div class="support-list-head"><div><h3>${l.name}</h3><small>${l.event?'Liste événement':'Liste normale'}</small></div><span class="support-status">${fid?'À SYNCHRONISER':'À CONFIGURER'}</span></div><div class="support-placeholder"><strong>Deck ${i+1}</strong><span>Le contenu apparaîtra ici après synchronisation Rayshift → Supabase.</span><a href="${fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup'}" target="_blank" rel="noopener">Ouvrir la source ↗</a></div></article>`).join('')}
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p){const inv=xpInventory(p);let random=0,classBonus=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);random+=n*XP_CARD_VALUE[star];classBonus+=n*XP_CARD_CLASS_VALUE[star]}}return{random,classBonus}}
@@ -285,5 +347,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown()}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
 localCacheLoad();PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
