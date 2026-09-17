@@ -63,7 +63,9 @@ async function resolveFandomImage(img,file){
     img.style.display='none';
   }
 }
-function fandomImgAttrs(file){return `data-fandom-file="${file}" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"`}
+// Inline onerror handlers run in the window scope; expose the module function explicitly.
+window.resolveFandomImage=resolveFandomImage;
+function fandomImgAttrs(file){return `data-fandom-file="${file}" referrerpolicy="no-referrer" onerror="window.resolveFandomImage(this,this.dataset.fandomFile)"`}
 function classImg(c){const k=classKey(c);const f=FANDOM[k]||FANDOM.Saber;return `<img class="class-icon-img" src="${fandomAsset(f)}" alt="${k}" loading="eager" ${fandomImgAttrs(f)}>`}
 function cardImg(t){const f=FANDOM[t];return `<img class="command-icon-img" src="${fandomAsset(f)}" alt="${t}" loading="eager" ${fandomImgAttrs(f)}>`}
 function grailImg(){const f=FANDOM.grail;return `<img class="grail-thumb" src="${fandomAsset(f)}" alt="Graal" loading="eager" ${fandomImgAttrs(f)}>`}
@@ -113,14 +115,16 @@ function categoryTotals(){
   };
 }
 function renderOverview(){
- const p=currentPlayer, owned=countOwned(p),five=countOwned(p,r=>rarityNum(r.rarity)===5&&!isWelfare(r)),four=countOwned(p,r=>rarityNum(r.rarity)===4&&!isWelfare(r)),wf=countOwned(p,r=>isWelfare(r));
+ const p=currentPlayer, ownedAll=countOwned(p), ownedGold=goldOwned(p), owned=skillScope==='gold'?ownedGold:ownedAll;
+ const five=countOwned(p,r=>rarityNum(r.rarity)===5&&!isWelfare(r)),four=countOwned(p,r=>rarityNum(r.rarity)===4&&!isWelfare(r)),wf=countOwned(p,r=>isWelfare(r));
  $('#introOwned').textContent=owned;
+ $('#introOwned').title=skillScope==='gold'?'Servants Gold possédés':'Servants possédés';
  $('#rarityDisplay').innerHTML=`<div class="rarity-card"><span class="label">5 STAR</span><span class="stars">★★★★★</span><span class="value">${five}</span></div><div class="rarity-card"><span class="label">4 STAR</span><span class="stars">★★★★</span><span class="value">${four}</span></div><div class="rarity-card welfare"><span class="label">WELFARE</span><span class="stars">FREE</span><span class="value">${wf}</span></div>`;
  $$('[data-skill-scope]').forEach(b=>b.classList.toggle('active',b.dataset.skillScope===skillScope));
  const dist=skillDist(p),mx=Math.max(...dist.slice(1),1);$('#skillsAverage').textContent=average(p).toFixed(1);$('#skillBars').innerHTML=Array.from({length:10},(_,i)=>10-i).map(l=>`<div class="skill-row"><span class="skill-level">${l}</span><div class="skill-track"><div class="skill-fill" style="width:${dist[l]/mx*100}%"></div></div><b>${dist[l]}</b></div>`).join('');
  const scopeLabel=skillScope==='gold'?'GOLD':'ALL';
- const markers=[['MOYENNE SKILL 1',average(p,0).toFixed(1)],['MOYENNE SKILL 2',average(p,1).toFixed(1)],['MOYENNE SKILL 3',average(p,2).toFixed(1)],['BOND 10+',bond10(p)],['NIVEAU 120',countLevel(p,120)],['NP 5 · 4★ / 5★ / WELFARE',np5Pct(p).toFixed(1)+'%']];
- $('#detailStats').innerHTML=markers.map(([l,v])=>`<div class="marker"><small>${l}</small><strong>${v}</strong><span class="scope-caption">${scopeLabel}</span></div>`).join('');
+ const markers=[['MOYENNE SKILL 1',average(p,0).toFixed(1),scopeLabel],['MOYENNE SKILL 2',average(p,1).toFixed(1),scopeLabel],['MOYENNE SKILL 3',average(p,2).toFixed(1),scopeLabel],['BOND 10+',bond10(p),''],['NIVEAU 120',countLevel(p,120),''],['% NP 5',np5Pct(p).toFixed(1)+'%','']];
+ $('#detailStats').innerHTML=markers.map(([l,v,c])=>`<div class="marker"><small>${l}</small><strong>${v}</strong>${c?`<span class="scope-caption">${c}</span>`:''}</div>`).join('');
  const pct=collectionPct(p),pctStr=pct.toFixed(1).replace('.0','');$('#collectionPct').textContent=pctStr+'%';$('#collectionRing').style.background=`conic-gradient(#5f89bc 0 ${pct}%,#edf1f5 ${pct}% 100%)`;
  const totals=categoryTotals(),bars=[['5★',five,totals.five],['4★',four,totals.four],['Welfare',wf,totals.welfare]];$('#miniBars').innerHTML=bars.map(([l,v,t])=>{const pct=t?Math.min(100,v/t*100):0;return `<div class="mini-bar"><span>${l}</span><div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div><b>${v} / ${t}</b></div>`}).join('');
 }
@@ -233,18 +237,25 @@ function renderShowdown(force=false){
 }
 function radarPolygon(values,cx,cy,rad){
  const n=values.length||1;
- return values.map((v,i)=>{const safe=Math.max(0,Math.min(1,Number(v)||0));const a=-Math.PI/2+i*(Math.PI*2/n);return `${cx+Math.cos(a)*rad*safe},${cy+Math.sin(a)*rad*safe}`;}).join(' ');
+ return values.map((v,i)=>{const pct=Math.max(0,Math.min(100,Number(v)||0));const visual=Math.sqrt(pct/100);const a=-Math.PI/2+i*(Math.PI*2/n);return `${cx+Math.cos(a)*rad*visual},${cy+Math.sin(a)*rad*visual}`;}).join(' ');
 }
 function renderRadar(colors){
  const el=$('#compareRadar');if(!el)return;
  const labels=['Collection 4★/5★/Welfare','Skill 1','Skill 2','Skill 3','NP 5','Bond 10+','Lv 120'];
- const points=labels.length,cx=310,cy=260,rad=165;
+ const points=labels.length,cx=350,cy=285,rad=205;
  const coords=i=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]};
- const axes=labels.map((l,i)=>{const [x,y]=coords(i),a=-Math.PI/2+i*(Math.PI*2/points),tx=cx+Math.cos(a)*(rad+34),ty=cy+Math.sin(a)*(rad+34);return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#cfd8e1"/><text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${l}</text>`}).join('');
- const rings=[.25,.5,.75,1].map(v=>`<polygon points="${Array.from({length:points},(_,i)=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad*v,cy+Math.sin(a)*rad*v].join(',')}).join(' ')}" fill="none" stroke="#dfe5eb"/>`).join('');
- const all=PLAYERS.map((p,i)=>{const s=compareStats(p);const den=Math.max(goldUniverse().length,1);const vals=[Math.min(1,s.owned/den),s.a1/10,s.a2/10,s.a3/10,Math.min(1,s.np5/den),Math.min(1,s.bond/den),Math.min(1,s.lvl120/den)];const pts=radarPolygon(vals,cx,cy,rad);const dots=vals.map((v,j)=>{const a=-Math.PI/2+j*(Math.PI*2/points);return `<circle cx="${cx+Math.cos(a)*rad*v}" cy="${cy+Math.sin(a)*rad*v}" r="5" fill="${colors[i]}" class="radar-point"/>`}).join('');return{p,pts,dots,color:colors[i]}});
+ const rings=[.25,.5,.75,1].map(v=>`<polygon points="${Array.from({length:points},(_,i)=>{const a=-Math.PI/2+i*(Math.PI*2/points);return [cx+Math.cos(a)*rad*v,cy+Math.sin(a)*rad*v].join(',')}).join(' ')}" fill="none" stroke="#d8e0e8" stroke-width="1.5"/>`).join('');
+ const axes=labels.map((l,i)=>{const [x,y]=coords(i),a=-Math.PI/2+i*(Math.PI*2/points),tx=cx+Math.cos(a)*(rad+38),ty=cy+Math.sin(a)*(rad+38);return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#d3dce5" stroke-width="1.5"/><text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${l}</text>`}).join('');
+ const den=Math.max(goldUniverse().length,1);
+ const all=PLAYERS.map((p,i)=>{
+   const s=compareStats(p);
+   const vals=[Math.min(100,s.owned/den*100),s.a1*10,s.a2*10,s.a3*10,Math.min(100,s.np5/den*100),Math.min(100,s.bond/den*100),Math.min(100,s.lvl120/den*100)];
+   const pts=radarPolygon(vals,cx,cy,rad);
+   const dots=vals.map((v,j)=>{const visual=Math.sqrt(Math.max(0,Math.min(100,v))/100);const a=-Math.PI/2+j*(Math.PI*2/points);return `<circle cx="${cx+Math.cos(a)*rad*visual}" cy="${cy+Math.sin(a)*rad*visual}" r="6" fill="${colors[i]}" class="radar-point"/>`}).join('');
+   return{p,pts,dots,color:colors[i],raw:vals};
+ });
  $('#radarLegend').innerHTML=all.map(x=>`<span class="legend-item"><i class="legend-dot" style="background:${x.color}"></i><b>${PLAYER_LABELS[x.p]}</b></span>`).join('');
- el.innerHTML=`<svg class="radar-svg" viewBox="0 0 620 530" role="img">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg>`;
+ el.innerHTML=`<div class="radar-shell"><svg class="radar-svg" viewBox="0 0 700 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Profil de progression comparé">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg><div class="radar-note">Échelle visuelle renforcée : les faibles pourcentages restent lisibles. Les valeurs réelles sont celles affichées dans les statistiques ci-dessus.</div></div>`;
 }
 function renderSupports(){supportPlayer=currentPlayer;const fid=supportLocal[supportPlayer]?.friendId||'';$('#supportFriendId').value=fid;$('#rayshiftLink').href=fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup';$('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');$$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});const frame=$('#rayFrameWrap');if(fid){frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>Friend ID ${fid}</span></div><p>Le profil Rayshift est public, mais son contenu ne peut pas être lu directement par GitHub Pages à cause des restrictions cross-origin. Le site est prêt à recevoir un proxy Supabase pour importer les 6 decks et les afficher ici sans iframe.</p><a class="source-btn" href="https://rayshift.io/na/${fid.replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`}else{frame.innerHTML='<div class="empty-state"><strong>Aucun Friend ID</strong><span>Ajoute le Friend ID NA pour préparer la synchronisation.</span></div>'}const lists=Array.from({length:6},(_,i)=>({name:`${i<3?'Normal':'Event'} ${i%3+1}`,event:i>=3}));$('#supportLists').innerHTML=lists.map((l,i)=>`<article class="support-list"><div class="support-list-head"><div><h3>${l.name}</h3><small>${l.event?'Liste événement':'Liste normale'}</small></div><span class="support-status">${fid?'À SYNCHRONISER':'À CONFIGURER'}</span></div><div class="support-placeholder"><strong>Deck ${i+1}</strong><span>Le contenu apparaîtra ici après synchronisation Rayshift → Supabase.</span><a href="${fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup'}" target="_blank" rel="noopener">Ouvrir la source ↗</a></div></article>`).join('')}
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
