@@ -247,12 +247,9 @@
 
 
 /* V21 — servants filters */
-.pop-wrap .filter-btn{position:relative;padding-right:32px}
-.pop-wrap .filter-btn::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-53%);font-size:13px;line-height:1;color:#697788}
-.hide-missing-btn{white-space:nowrap}
+.hide-missing-btn{white-space:nowrap;width:auto;padding-left:10px!important;padding-right:10px!important}
 .hide-missing-btn.active{background:#25374a;border-color:#25374a;color:#fff}
 .release-skill-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
-.release-skill-row span{min-width:0;border:1px solid #e1e7ed;background:#f7f9fb;border-radius:8px;padding:6px 5px;text-align:center}
-.release-skill-row small{display:block;color:#8b96a3;font:700 8px monospace;letter-spacing:.06em}
-.release-skill-row b{display:block;margin-top:2px;font:800 13px 'Space Grotesk';color:#2a3745}
+.release-skill-row span{min-width:0;border:1px solid #e5e9ee;background:#fbfcfd;border-radius:8px;padding:5px;text-align:center}
+.release-skill-row b{display:block;font:700 13px 'Space Grotesk';color:#586777}
 @media(max-width:900px){.hide-missing-btn{flex:1 1 auto}}

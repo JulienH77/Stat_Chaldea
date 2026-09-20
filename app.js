@@ -9,12 +9,11 @@ const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
 const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
-const FANDOM={
- Saber:'Class-Saber-Gold.webp',Archer:'Class-Archer-Gold.webp',Lancer:'Class-Lancer-Gold.webp',Rider:'Class-Rider-Gold.webp',Caster:'Class-Caster-Gold.webp',Assassin:'Class-Assassin-Gold.webp',Berserker:'Class-Berserker-Gold.webp',Ruler:'Class-Ruler-Gold.webp',Avenger:'Class-Avenger-Gold.webp','Alter Ego':'Class-Alterego-Gold.webp','Moon Cancer':'Class-MoonCancer-Gold.webp',Foreigner:'Class-Foreigner-Gold.webp',Pretender:'Class-Pretender-Gold.webp',Shielder:'Class-Shielder-Gold.webp',Beast:'Class-Beast-Gold.webp',
- grail:'Icongrail.png', Q:'Quickmini.png', A:'Artsmini.png', B:'Bustermini.png'
+const IMG={
+ Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
+ grail:'graal.webp', np:'np.webp', Q:'quick.webp', A:'arts.webp', B:'buster.webp'
 };
-const FANDOM_URL='https://fategrandorder.fandom.com/wiki/Special:Redirect/file/';
-const NP_LEVEL_ICON='NP_Icon.png';
+const IMG_BASE='./IMG/';
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
@@ -36,39 +35,13 @@ const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math
 const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
 const WELFARE_NAMES=new Set((welfareData.names||[]).map(norm));
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
-const localKey='chaldea-v16-cache';
+const localKey='chaldea-v21-img-cache';
 function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
 function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
-function fandomAsset(name){return FANDOM_URL+encodeURIComponent(name)}
-const fandomResolved=new Map();
-async function resolveFandomImage(img,file){
-  if(!img||!file)return;
-  img.referrerPolicy='no-referrer';
-  try{
-    if(fandomResolved.has(file)){img.onerror=null;img.src=fandomResolved.get(file);return}
-    const api='https://fategrandorder.fandom.com/api.php?action=query&prop=imageinfo&iiprop=url&format=json&origin=*&titles='+encodeURIComponent('File:'+file);
-    const res=await fetch(api,{cache:'force-cache'});
-    if(!res.ok)throw new Error('Fandom API '+res.status);
-    const json=await res.json();
-    const pages=json?.query?.pages||{};
-    const page=Object.values(pages)[0];
-    const url=page?.imageinfo?.[0]?.url;
-    if(!url)throw new Error('Fichier Fandom introuvable');
-    fandomResolved.set(file,url);
-    img.onerror=null;
-    img.src=url;
-  }catch(e){
-    if(img.dataset.hiddenAfterFallback)return;
-    img.dataset.hiddenAfterFallback='1';
-    img.style.display='none';
-  }
-}
-// Inline onerror handlers run in the window scope; expose the module function explicitly.
-window.resolveFandomImage=resolveFandomImage;
-function fandomImgAttrs(file){return `data-fandom-file="${file}" referrerpolicy="no-referrer" onerror="window.resolveFandomImage(this,this.dataset.fandomFile)"`}
-function classImg(c){const k=classKey(c);const f=FANDOM[k]||FANDOM.Saber;return `<img class="class-icon-img" src="${fandomAsset(f)}" alt="${k}" loading="eager" ${fandomImgAttrs(f)}>`}
-function cardImg(t){const f=FANDOM[t];return `<img class="command-icon-img" src="${fandomAsset(f)}" alt="${t}" loading="eager" ${fandomImgAttrs(f)}>`}
-function grailImg(){const f=FANDOM.grail;return `<img class="grail-thumb" src="${fandomAsset(f)}" alt="Graal" loading="eager" ${fandomImgAttrs(f)}>`}
+function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
+function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
+function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
+function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.rarity==='Welfare'||WELFARE_NAMES.has(norm(r.name))}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
@@ -144,7 +117,7 @@ function renderRoster(){
  const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!hideMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))});
  sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=hideMissing?`${ownedTotal} possédés affichés`:`${ownedTotal} possédés · ${totalVisible-ownedTotal} manquants`;$('#rosterCards').classList.toggle('hidden',rosterMode!=='cards');$('#rosterTable').classList.toggle('hidden',rosterMode!=='table');
  if(rosterMode==='cards'){
-   $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);const d=atlasById.get(Number(r.atlasId||r.id));const ni=npIcon(d);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count"><img src="${fandomAsset(FANDOM.grail)}" alt="Graal">${Number(s.grail)}</span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${ni?`<img src="${ni}" alt="">`:'✦'}</span>${npDisplay(s.np,true)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><small>S${i+1}</small><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');loadCardImages(rows,token);
+   $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);const d=atlasById.get(Number(r.atlasId||r.id));return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count"><img src="${fandomAsset(FANDOM.grail)}" alt="Graal">${Number(s.grail)}</span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npDisplay(s.np,true)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');loadCardImages(rows,token);
  }else{$('#rosterTable').innerHTML=`<table class="table"><thead><tr><th>Servant</th><th>Classe</th><th>Rareté</th><th>Lv</th><th>NP</th><th>S1</th><th>S2</th><th>S3</th><th>Bond</th><th>Coins</th></tr></thead><tbody>${rows.map(({r,s})=>`<tr data-servant-id="${r.id}" class="${isOwned(currentPlayer,r)?'':'missing-row'}"><td><b>${r.name}</b></td><td>${classImg(r.class)}</td><td>${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</td><td>${displayLevel(currentPlayer,r,s)}</td><td>${s.np??'—'}</td><td>${s.skills?.[0]??'—'}</td><td>${s.skills?.[1]??'—'}</td><td>${s.skills?.[2]??'—'}</td><td>${s.bond??'—'}</td><td>${coinEstimate(r,s)?.value??'—'}</td></tr>`).join('')}</tbody></table>`}
  $$(`.servant-card,.table tr[data-servant-id]`).forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
 }
@@ -184,12 +157,12 @@ function inputOrRead(id,value,min,max){return currentCanEdit()?`<input class="ed
 function bondDiamonds(bond){const n=Math.max(0,Math.min(15,Number(bond)||0));const row=a=>Array.from({length:a},(_,j)=>{const i=a===10?j:j+10;return `<span class="bond-diamond ${i<n?'filled':''}"></span>`}).join('');return `<div class="bond-diamonds"><div class="bond-row bond-row-1">${row(10)}</div><div class="bond-row bond-row-2">${row(5)}</div></div><small class="bond-caption">Bond ${n||'—'} / 15</small>`}
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
 function openModalBase(r,d,urls,idx){
- const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),cards=commandCards(d,r),ni=npIcon(d);
+ const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),cards=commandCards(d,r);
  const art=urls[idx]||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
- const npHtml=can?`<div class="np-edit-wrap"><img data-fandom-file="${NP_LEVEL_ICON}" src="${ni}" alt="NP" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row"><img data-fandom-file="${NP_LEVEL_ICON}" src="${ni}" alt="NP" referrerpolicy="no-referrer" onerror="resolveFandomImage(this,this.dataset.fandomFile)"><b>${npRead}</b></div>`;
+ const npHtml=can?`<div class="np-edit-wrap">${npIcon()}<input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>`:`<div class="np-detail-row">${npIcon()}<b>${npRead}</b></div>`;
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
