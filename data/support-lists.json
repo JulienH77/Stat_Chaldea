@@ -2,7 +2,7 @@
   "version": 2,
   "source": "Rayshift public API",
   "region": "NA",
-  "updatedAt": "2026-09-22T21:15:43.169Z",
+  "updatedAt": "2026-09-22T22:41:49.496Z",
   "players": {
     "julien": {
       "code": "939739133",
@@ -35,24 +35,31 @@
     "yanis": {
       "code": "466299356",
       "name": "Die;Heart v2",
-      "lastUpdate": 1768353299,
-      "lastLogin": 1768352260,
-      "guid": "4169655a-d835-41d0-9519-75f95df3749d",
-      "decksPresent": [1, 2, 4, 8, 16, 32],
+      "lastUpdate": 1790116214,
+      "lastLogin": 1790105788,
+      "guid": "c20e3c87-99cf-48e0-afe1-ad4bf605c391",
+      "decksPresent": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
       "decks": {
-          "0": "/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/1/1.png",
-          "1": "/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/8/1.png"
-        },
+        "0": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/8/1.png"
+      },
       "deckImages": {
-        "1": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/1/9.png",
-        "2": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/2/9.png",
-        "4": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/4/9.png",
-        "8": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/8/9.png",
-        "16": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/16/9.png",
-        "32": "https://rayshift.io/static/images/deck-gen/na/466299356/4169655a-d835-41d0-9519-75f95df3749d/32/9.png"
+        "1": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/32/9.png"
       },
       "message": "ok"
-     },
+    },
     "attmann": {
       "code": "921819502",
       "name": "Seph",
