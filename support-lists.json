@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "source": "Rayshift public API",
+  "region": "NA",
+  "updatedAt": null,
+  "players": {
+    "julien": {
+      "code": "939739133",
+      "name": "Julien",
+      "lastUpdate": null,
+      "lastLogin": null,
+      "guid": null,
+      "decksPresent": [],
+      "decks": {}
+    },
+    "yanis": {
+      "code": "",
+      "name": "Yanis",
+      "lastUpdate": null,
+      "lastLogin": null,
+      "guid": null,
+      "decksPresent": [],
+      "decks": {}
+    },
+    "attmann": {
+      "code": "",
+      "name": "Attmann",
+      "lastUpdate": null,
+      "lastLogin": null,
+      "guid": null,
+      "decksPresent": [],
+      "decks": {}
+    }
+  }
+}
