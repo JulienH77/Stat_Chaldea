@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#eef2f6"><title>Chaldea Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=28.0">
+<link rel="stylesheet" href="styles.css?v=29.0">
 <link rel="icon" href="chaldea.ico">
 </head><body>
 <div class="app-shell">
@@ -75,6 +75,7 @@
       <label class="xp-big-field"><span>NIVEAU ACTUEL</span><input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1" inputmode="numeric"></label>
       <div class="xp-arrow-big">→</div>
       <label class="xp-big-field target"><span>NIVEAU SOUHAITÉ</span><input id="xpTargetLevel" class="xp-input beige" type="number" min="1" max="120" value="120" inputmode="numeric"></label>
+      <label class="xp-big-field"><span>CLASSE DU SERVANT</span><select id="xpClassSelect" class="xp-input beige"><option value="">Sans bonus de classe</option><option>Saber</option><option>Archer</option><option>Lancer</option><option>Rider</option><option>Caster</option><option>Assassin</option><option>Berserker</option></select></label>
       <div id="xpTargetSummary" class="xp-result-card"></div>
     </div>
   </section>
@@ -117,5 +118,5 @@
 </main></div>
 
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
-<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=28.0"></script>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=29.0"></script>
 </body></html>

@@ -1,6 +1,6 @@
 Chaldea Command V20
 
-# Chaldea Command · V17
+# Chaldea Command · V29
 
 GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
 
@@ -100,3 +100,22 @@ par une expression cron mensuelle, par exemple le premier jour du mois à 04:30 
 ### Configuration client / GitHub Actions
 
 `config.js` contient uniquement l'URL Supabase et la clé publishable destinées au navigateur. La clé secrète `SUPABASE_SECRET_KEY` n'est jamais placée dans `config.js` : elle est utilisée uniquement par le workflow GitHub Actions via les secrets du dépôt.
+
+
+## V29 · NA roster, XP and Rayshift support
+
+### Catalogue NA
+The web app now prefers Atlas Academy's lightweight static NA servant export (`export/NA/basic_servant.json`) instead of a large search request. Atlas documents these static exports for indexing and maintains the data automatically after new game versions. The app reconciles the roster against that NA catalogue, excludes the configured non-display IDs, and explicitly keeps Ereshkigal (collectionNo 417 / Beast) available even if a temporary Atlas request fails.
+
+### NP display
+Small Servant cards show at most `NP 5`; the detailed Servant modal keeps the full entered value, displaying e.g. `NP 5 (7)` for values above five.
+
+### XP calculator
+The calculator includes a target Servant class. When selected, cards from the matching class contribute their class-bonus XP (120% of their base value) to the available effective XP. Inventory cells save locally immediately and synchronize to Supabase shortly after editing when the connected user has edit rights.
+
+### Rayshift Support Lists
+Rayshift documents a public endpoint `GET https://rayshift.io/api/v1/support/decks/{region}/{friendCode}`. It returns the public profile metadata, the bitmask of present decks, and image paths for the Main 1-3 and Event 1-3 decks. The app can request this endpoint directly as a best-effort live refresh and falls back to `data/support-lists.json`. A GitHub Actions workflow also refreshes the snapshot every six hours.
+
+Only the Friend ID is used for these lookups. The player's Rayshift display name is not stored in `data/support-lists.json`.
+
+To configure friends, each editor can enter their own NA Friend ID in **Support Lists → NA Friend ID → Enregistrer**. The ID is stored in Supabase in `chaldea_support_profiles`; the scheduled workflow then reads those IDs and refreshes the public deck images. No Rayshift API key is needed for the public `/support/decks` endpoint.

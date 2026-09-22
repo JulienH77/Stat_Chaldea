@@ -11,7 +11,7 @@ const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
 const NA_BLOCKED_IDS=new Set([83,149,151,168,240,333,411,412,436,443,460]);
-const NA_FORCE_INCLUDE=[{id:417,name:'Space Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Arts',atlasId:417}];
+const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
 const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
 const IMG={
  Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
@@ -22,7 +22,8 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=(state.roster||[]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&!FUTURE_NAMES.has(norm(r.name)));
-let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false;
+if(!state.roster.some(r=>Number(r.id)===417)){state.roster.push({...NA_FORCE_INCLUDE[0]});}
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='';
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
@@ -72,7 +73,7 @@ function np5Pct(p){const den=goldUniverse().length;return den?np5Count(p)/den*10
 function coinEstimate(r,s){if(rarityNum(r.rarity)<4||!isOwned(currentPlayer,r))return null;if(s.servantCoins!=null)return{value:s.servantCoins,estimated:false};let n=Math.max(1,Number(s.np)||1),base=rarityNum(r.rarity)===5?90:50;let copy=Math.max(0,n-1)*base;let bond=Math.max(0,Number(s.bond)||0);let bondCoins=[0,0,0,0,0,30,45,60,75,90,105][Math.min(10,bond)]||0;let app=(s.appendSkills||[]).filter(validSkill).length*20;return{value:copy+base+bondCoins+app,estimated:true}}
 function clampNP(s){return s.np==null?'—':Math.min(5,Math.max(0,Number(s.np)))}
 function npDisplay(v,small=true){const n=num(v);if(n==null)return '—';const c=Math.max(0,Math.min(5,n));return n>5?`NP ${c}${small?` <small>(${n})</small>`:` (${n})`}`:`NP ${c}`}
-function npCardDisplay(v){const n=num(v);if(n==null)return '—';return `NP ${Math.max(0,n)}`}
+function npCardDisplay(v){const n=num(v);if(n==null)return '—';return `NP ${Math.min(5,Math.max(0,n))}`}
 function xpInventory(p){state.players[p].xp??=XP_DEFAULT();for(const c of XP_CLASSES)state.players[p].xp[c]??={5:0,4:0,3:0};return state.players[p].xp}
 function updateSync(text,error=false){$('#syncText').textContent=text;$('#syncDot').parentElement.classList.toggle('error',error)}
 function isApiAuthError(error){return !!error&&(String(error.code)==='401'||String(error.status)==='401'||/jwt|apikey|api key|unauthoriz|invalid/i.test(String(error.message||'')))}
@@ -129,27 +130,32 @@ async function loadCardImages(rows,token){let i=0;const hadMissing=rows.some(({r
 function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
 async function fetchAtlasList(){
   try{
-    const url='https://api.atlasacademy.io/nice/NA/servant/search?type=normal&type=heroine&className=saber&className=archer&className=lancer&className=rider&className=caster&className=assassin&className=berserker&className=shielder&className=ruler&className=alterEgo&className=avenger&className=moonCancer&className=foreigner&className=pretender&className=beast';
-    const r=await fetch(url,{cache:'no-store'});
-    if(r.ok){const arr=await r.json();if(Array.isArray(arr)&&arr.length)return arr}
-  }catch(e){console.warn('Atlas NA playable list indisponible',e)}
-  try{
     const r=await fetch('https://api.atlasacademy.io/export/NA/basic_servant.json',{cache:'no-store'});
-    if(r.ok){const raw=await r.json();const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.data)?raw.data:[]);if(arr.length)return arr}
-  }catch(e){console.warn('Atlas static export NA indisponible',e)}
-  return []
+    if(r.ok){
+      const raw=await r.json();
+      const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.Entries)?raw.Entries:(Array.isArray(raw?.entries)?raw.entries:(Array.isArray(raw?.data)?raw.data:[])));
+      if(arr.length)return arr;
+    }
+  }catch(e){console.warn('Atlas NA static export indisponible',e)}
+  return [];
 }
 
 async function syncRosterNA(){
   const arr=await fetchAtlasList();
-  if(!arr.length){$('#atlasStatus').textContent='ATLAS / NA · indisponible';return}
+  if(!arr.length){
+    const forced=NA_FORCE_INCLUDE[0];
+    if(!state.roster.some(r=>Number(r.id)===417)){state.roster.push({...forced});PLAYERS.forEach(p=>ensureStats(p,417));}
+    $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+    fillFilters();renderAll();
+    return;
+  }
   const byColl=new Map(arr.map(x=>[Number(x.collectionNo),x]));
   const keep=[];
   for(const r of state.roster){
     const a=byColl.get(Number(r.id));
     if(NA_BLOCKED_IDS.has(Number(r.id)))continue;
     if(a&&classKey(normalizeClass(a.className))!=='Extra'&&!FUTURE_NAMES.has(norm(a.name))){
-      keep.push({...r,name:a.name,class:normalizeClass(a.className),rarity:atlasRarity(a),atlasId:a.id});
+      keep.push({...r,name:a.name,class:normalizeClass(a.className),rarity:atlasRarity(a),atlasId:a.id,nonCounted:isMash(a)});
     }else if(isMash(r)){
       keep.push({...r,nonCounted:true,atlasId:r.atlasId||r.id});
     }
@@ -157,11 +163,11 @@ async function syncRosterNA(){
   const seen=new Set(keep.map(r=>Number(r.id)));
   for(const a of arr){
     const id=Number(a.collectionNo),name=String(a.name||'');
-    if(!id||NA_BLOCKED_IDS.has(id)||isMash(a))continue;
+    if(!id||NA_BLOCKED_IDS.has(id))continue;
     const cls=normalizeClass(a.className);
     if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;
     if(!seen.has(id)){
-      keep.push({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id});
+      keep.push({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id,nonCounted:isMash(a)});
       PLAYERS.forEach(p=>ensureStats(p,id));
       seen.add(id);
     }
@@ -198,7 +204,9 @@ function commandCards(d,r){
     return null;
   };
   const deck=arr.map(code).filter(Boolean).slice(0,5);
-  return deck.length===5?deck:[];
+  if(deck.length!==5)return [];
+  const order={Q:0,A:1,B:2};
+  return deck.sort((a,b)=>order[a]-order[b]);
 }
 function npIcon(){return `<img class="np-card-icon" src="${localAsset(IMG.np)}" alt="NP" loading="eager">`}
 
@@ -326,8 +334,36 @@ function renderRadar(colors){
  $('#radarLegend').innerHTML=all.map(x=>`<span class="legend-item"><i class="legend-dot" style="background:${x.color}"></i><b>${PLAYER_LABELS[x.p]}</b></span>`).join('');
  el.innerHTML=`<div class="radar-shell"><svg class="radar-svg" viewBox="0 0 700 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Profil de progression comparé">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg><div class="radar-note">Échelle visuelle renforcée : les faibles pourcentages restent lisibles. Les valeurs réelles sont celles affichées dans les statistiques ci-dessus.</div></div>`;
 }
+const supportLiveCache=new Map();
+async function fetchRayshiftSupport(player,fid,force=false){
+  const id=String(fid||'').replace(/\D/g,'');
+  if(!id)return null;
+  const key=`${player}:${id}`;
+  const cached=supportLiveCache.get(key);
+  if(cached&&!force&&Date.now()-cached.at<5*60*1000)return cached.data;
+  try{
+    const res=await fetch(`https://rayshift.io/api/v1/support/decks/na/${id}`,{cache:'no-store',headers:{Accept:'application/json'}});
+    if(!res.ok)throw new Error(`${res.status} ${res.statusText}`);
+    const data=await res.json();
+    const r=data?.response||{};
+    const decks={};
+    for(const [flag,path] of Object.entries(r.decks||{}))decks[String(flag)]=String(path).startsWith('http')?path:`https://rayshift.io${path}`;
+    const clean={code:String(r.code||id),lastUpdate:r.lastUpdate||null,lastLogin:r.lastLogin||null,guid:r.guid||null,decksPresent:Array.isArray(r.decksPresent)?r.decksPresent.map(Number).filter(Boolean):Object.keys(decks).map(Number),decks,message:data?.message||'ok'};
+    supportLiveCache.set(key,{at:Date.now(),data:clean});
+    supportSnapshot.players[player]=clean;
+    return clean;
+  }catch(e){console.warn('Rayshift public API indisponible',e);return null}
+}
 function renderSupports(){
   const fid=supportLocal[supportPlayer]?.friendId||supportSnapshot.players?.[supportPlayer]?.code||'';
+  if(fid){
+    const playerAtStart=supportPlayer;
+    const cleanFid=String(fid).replace(/\D/g,'');
+    const key=`${playerAtStart}:${cleanFid}`;
+    if(!supportLiveCache.has(key)){
+      fetchRayshiftSupport(playerAtStart,cleanFid).then(data=>{if(data&&currentView==='supports'&&supportPlayer===playerAtStart)renderSupports();});
+    }
+  }
   $('#supportFriendId').value=fid;
   $('#rayshiftLink').href=fid?`https://rayshift.io/na/${String(fid).replace(/\D/g,'')}`:'https://rayshift.io/lookup';
   $('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');
@@ -352,16 +388,17 @@ function renderSupports(){
 }
 
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
-function xpTotalsFor(p){const inv=xpInventory(p);let random=0,classBonus=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);random+=n*XP_CARD_VALUE[star];classBonus+=n*XP_CARD_CLASS_VALUE[star]}}return{random,classBonus}}
+function xpTotalsFor(p,targetClass=''){const inv=xpInventory(p);let random=0,effective=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);const base=n*XP_CARD_VALUE[star];random+=base;effective+=targetClass&&c===targetClass?Math.round(base*1.2):base}}return{random,classBonus:effective,effective}}
 function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(a,Math.min(120,Number(to)||120));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
 function cardsNeeded(xp,value){return xp>0?Math.ceil(xp/value):0}
 function xpDerivedState(p){
   const inv=xpInventory(p);
-  const totals=xpTotalsFor(p);
+  const targetClass=$('#xpClassSelect')?.value||xpTargetClass||'';
+  const totals=xpTotalsFor(p,targetClass);
   const cur=Math.max(1,Math.min(120,Number($('#xpCurrentLevel')?.value)||1));
   const target=Math.max(cur,Math.min(120,Number($('#xpTargetLevel')?.value)||120));
   const need=xpNeed(cur,target);
-  return {inv,random:totals.random,classBonus:totals.classBonus,cur,target,need};
+  return {inv,random:totals.random,classBonus:totals.classBonus,cur,target,need,targetClass};
 }
 function updateXpComputed(){
   const d=xpDerivedState(currentPlayer);
@@ -373,16 +410,16 @@ function updateXpComputed(){
     ['4★ random',cardsNeeded(d.need,XP_CARD_VALUE[4])],
     ['4★ classe',cardsNeeded(d.need,XP_CARD_CLASS_VALUE[4])]
   ];
-  const available=Math.max(0,d.random);
+  const available=Math.max(0,d.classBonus);
   const remaining=Math.max(0,d.need-available);
   const summary=$('#xpTargetSummary');
-  if(summary) summary.innerHTML=`<div class="xp-result-primary"><div><span>XP À FOURNIR</span><strong>${xpFmt(d.need)}</strong><small>${d.cur} → ${d.target}</small></div><div class="xp-result-status ${remaining===0?'ready':''}"><b>${remaining===0?'OBJECTIF COUVERT':'IL RESTE'}</b><strong>${remaining===0?'✓':xpFmt(remaining)}</strong><span>${remaining===0?'ton stock suffit':'XP à réunir'}</span></div></div><div class="xp-result-cards">${cards.map(([l,v])=>`<div><b>${fmtNum(v)}</b><span>${l}</span></div>`).join('')}</div>`;
+  if(summary) summary.innerHTML=`<div class="xp-result-primary"><div><span>XP À FOURNIR</span><strong>${xpFmt(d.need)}</strong><small>${d.cur} → ${d.target}</small></div><div class="xp-result-status ${remaining===0?'ready':''}"><b>${remaining===0?'OBJECTIF COUVERT':'IL RESTE'}</b><strong>${remaining===0?'✓':xpFmt(remaining)}</strong><span>${remaining===0?'ton stock suffit':(d.targetClass?`XP à réunir · ${d.targetClass}`:'XP à réunir')}</span></div></div><div class="xp-result-cards">${cards.map(([l,v])=>`<div><b>${fmtNum(v)}</b><span>${l}</span></div>`).join('')}</div>`;
   const hint=$('#xpStockHint');
   if(hint) hint.innerHTML=remaining===0?'<strong>Stock suffisant</strong><span>Ton inventaire couvre cet objectif en XP brute.</span>':`<strong>${xpFmt(remaining)} XP manquants</strong><span>Le calcul te donne le volume d’XP encore nécessaire.</span>`;
   $$('[data-xp-goal]').forEach(b=>b.classList.toggle('active',b.dataset.xpGoal===String(d.target)));
 }
 function renderXp(){
-  const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit(),totals=xpTotalsFor(p);
+  const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit(),targetClass=xpTargetClass;
   $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
     const row=inv[c];
     const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
@@ -392,7 +429,7 @@ function renderXp(){
   const grand=[5,4,3].map(st=>XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0));
   $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${grand.map(v=>`<th>${fmtNum(v)}</th>`).join('')}<th>${xpFmt(totals.random)}</th><th>${xpFmt(totals.classBonus)}</th></tr>`;
   $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<button class="xp-milestone modern" data-xp-milestone="${l}"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★</small></button>`).join('');
-  $$('.xp-stock-input').forEach(i=>i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Math.floor(Number(i.value)||0));clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(saveXpCloud,600);updateXpComputed()});
+  $$('.xp-stock-input').forEach(i=>{i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Math.floor(Number(i.value)||0));localCacheSave();clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(async()=>{const ok=await saveXpCloud();if(ok)updateSync('Cloud · inventaire XP synchronisé');},450);updateXpComputed()};i.onchange=()=>{clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(async()=>{const ok=await saveXpCloud();if(ok)updateSync('Cloud · inventaire XP synchronisé');},150);};});
   $$('.xp-milestone').forEach(b=>b.onclick=()=>{$('#xpTargetLevel').value=b.dataset.xpMilestone;updateXpComputed()});
   updateXpComputed();
 }
@@ -449,7 +486,7 @@ async function saveAllToSupabase(){
   localCacheSave();updateSync('Cloud · toutes les données synchronisées');toast('Toutes tes données sont enregistrées dans Supabase');await refreshPublicStats();await loadXpCloud();await loadSupportProfiles();return true;
  }catch(error){toast('Erreur Supabase : '+(error?.message||error));return false}
 }
-async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit())return;const inv=xpInventory(currentPlayer);const {error}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:inv,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)console.warn('XP sync',error.message)}
+async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit())return false;const inv=xpInventory(currentPlayer);const {error}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:inv,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error){console.warn('XP sync',error.message);return false}return true}
 async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
 async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
 async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
@@ -488,5 +525,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);supportLiveCache.delete(`${supportPlayer}:${fid}`);renderSupports()};if($('#refreshRayshift'))$('#refreshRayshift').onclick=async()=>{const fid=supportLocal[supportPlayer]?.friendId||'';if(!fid){toast('Renseigne un Friend ID');return}const data=await fetchRayshiftSupport(supportPlayer,fid,true);if(data){renderSupports();toast('Support List actualisée');}else toast('Rayshift indisponible ou Friend ID introuvable')};
 localCacheLoad();PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();

@@ -40,7 +40,6 @@ async function rayshiftDecks(friendId) {
   }
   return {
     code: String(r.code || id),
-    name: r.name || '',
     lastUpdate: r.lastUpdate || null,
     lastLogin: r.lastLogin || null,
     guid: r.guid || null,
@@ -50,7 +49,7 @@ async function rayshiftDecks(friendId) {
   };
 }
 
-const current = JSON.parse(await fs.readFile(OUT, 'utf8').catch(() => '{"version":1,"source":"Rayshift public API","region":"NA","players":{}}'));
+const current = JSON.parse(await fs.readFile(OUT, 'utf8').catch(() => '{"version":2,"source":"Rayshift public API","region":"NA","players":{}}'));
 const profiles = await getJson(`${SUPABASE_URL}/rest/v1/chaldea_support_profiles?select=player_key,friend_id`);
 const byPlayer = new Map((profiles || []).map(x => [String(x.player_key), String(x.friend_id || '')]));
 const next = { ...current, version: 2, source: 'Rayshift public API', region: 'NA', updatedAt: new Date().toISOString(), players: { ...(current.players || {}) } };
