@@ -277,3 +277,16 @@
 .friend-refresh{height:40px;border:1px solid #d0dbe5;border-radius:10px;background:#f6f8fa;color:#62768b;padding:0 12px;cursor:pointer;font-weight:700}
 .friend-refresh:hover{background:#edf2f6}
 @media(max-width:1100px){.xp-planner-main{grid-template-columns:1fr 34px 1fr}.xp-planner-main .xp-big-field:nth-of-type(3){grid-column:1/-1}.xp-result-card{grid-column:1/-1}}
+
+/* V30 XP class picker */
+.xp-class-picker{position:relative;width:100%}
+.xp-class-picker-btn{width:100%;height:48px;display:flex;align-items:center;gap:9px;border:1px solid #dfc99b;border-radius:12px;background:#fbf0d7;color:#263242;padding:0 12px;cursor:pointer;font:700 11px 'Space Grotesk';text-align:left}
+.xp-class-picker-btn:focus{outline:0;border-color:#bc9340;box-shadow:0 0 0 3px rgba(188,147,64,.12)}
+.xp-class-picker-icon{width:24px;height:24px;display:grid;place-items:center;flex:none}.xp-class-picker-icon .class-icon-img{width:24px;height:24px}
+.xp-class-picker-chevron{margin-left:auto;color:#7d8792}
+.xp-class-menu{display:none;position:absolute;left:0;right:0;top:54px;z-index:70;padding:6px;background:#fff;border:1px solid #dbe3ea;border-radius:12px;box-shadow:0 18px 42px rgba(36,49,63,.16);grid-template-columns:1fr 1fr;gap:4px}
+.xp-class-menu.open{display:grid}
+.xp-class-option{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;border:0;background:#fff;border-radius:9px;padding:6px 8px;cursor:pointer;color:#334153;font:700 10px 'Space Grotesk';text-align:left}
+.xp-class-option:hover{background:#f3f6f9}
+.xp-class-option.active{background:#edf3f8}
+.xp-class-option .class-icon-img{width:22px;height:22px}

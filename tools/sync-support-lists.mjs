@@ -5,6 +5,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL?.replace(/\/$/, '');
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const OUT = new URL('./data/support-lists.json', ROOT);
 const PLAYERS = ['julien', 'yanis', 'attmann'];
+const SUPPORT_DECK_BITS = [1, 2, 4, 8, 16, 32];
 
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
   throw new Error('SUPABASE_URL et SUPABASE_SECRET_KEY doivent être définis dans les secrets GitHub.');
@@ -34,17 +35,23 @@ async function rayshiftDecks(friendId) {
   });
   if (Number(data?.status) !== 200 || !data?.response) return { code: id, name: '', lastUpdate: null, lastLogin: null, guid: null, decksPresent: [], decks: {}, message: data?.message || 'not found' };
   const r = data.response;
+  const code = String(r.code || id);
+  const guid = r.guid ? String(r.guid) : '';
   const decks = {};
   for (const [flag, path] of Object.entries(r.decks || {})) {
     decks[String(flag)] = String(path).startsWith('http') ? path : `https://rayshift.io${path}`;
   }
+  const decksPresent = Array.isArray(r.decksPresent) ? r.decksPresent.map(Number).filter(Boolean) : Object.keys(decks).map(Number);
+  const deckImages = Object.fromEntries(SUPPORT_DECK_BITS.map(bit => [String(bit), decksPresent.includes(bit) && guid ? `https://rayshift.io/static/images/deck-gen/na/${code}/${encodeURIComponent(guid)}/${bit}/9.png` : '']));
   return {
-    code: String(r.code || id),
+    code,
+    name: r.name || '',
     lastUpdate: r.lastUpdate || null,
     lastLogin: r.lastLogin || null,
-    guid: r.guid || null,
-    decksPresent: Array.isArray(r.decksPresent) ? r.decksPresent.map(Number).filter(Boolean) : Object.keys(decks).map(Number),
+    guid: guid || null,
+    decksPresent,
     decks,
+    deckImages,
     message: data.message || 'ok'
   };
 }
