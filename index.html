@@ -75,7 +75,7 @@
       <label class="xp-big-field"><span>NIVEAU ACTUEL</span><input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1" inputmode="numeric"></label>
       <div class="xp-arrow-big">→</div>
       <label class="xp-big-field target"><span>NIVEAU SOUHAITÉ</span><input id="xpTargetLevel" class="xp-input beige" type="number" min="1" max="120" value="120" inputmode="numeric"></label>
-      <label class="xp-big-field"><span>CLASSE DU SERVANT</span><input id="xpClassSelect" type="hidden" value=""><div class="xp-class-picker" id="xpClassPicker"><button type="button" class="xp-class-picker-btn" id="xpClassPickerBtn"><span class="xp-class-picker-icon" id="xpClassPickerIcon"></span><span id="xpClassPickerLabel">Sans bonus de classe</span><span class="xp-class-picker-chevron">⌄</span></button><div class="xp-class-menu" id="xpClassMenu"></div></div></label>
+      <div class="xp-big-field xp-class-field"><span>CLASSE DU SERVANT</span><input id="xpClassSelect" type="hidden" value=""><div class="xp-class-grid" id="xpClassGrid" aria-label="Choisir la classe du Servant"></div><small class="xp-class-hint" id="xpClassHint">Aucun bonus · clique sur une classe pour l’activer</small></div>
       <div id="xpTargetSummary" class="xp-result-card"></div>
     </div>
   </section>
@@ -106,17 +106,18 @@
 </section>
 
 <section class="view" id="view-supports">
-  <div class="page-heading"><div><span class="eyebrow">FRIEND SYSTEM</span><h1>Support Lists</h1><p>Les six decks de chaque Master, avec import Rayshift côté serveur lorsqu'il est configuré.</p></div></div>
+  <div class="page-heading"><div><span class="eyebrow">FRIEND SYSTEM</span><h1>Support Lists</h1><p>Affiche les trois supports normaux ou les trois supports événement directement depuis Rayshift.</p></div></div>
   <div class="support-tabs" id="supportMasterTabs"></div>
-  <div class="support-toolbar"><div class="friend-id"><label>NA Friend ID</label><input id="supportFriendId" inputmode="numeric" placeholder="123456789"><button id="saveFriendId">Enregistrer</button></div><a id="rayshiftLink" class="source-btn" href="https://rayshift.io/lookup" target="_blank" rel="noopener">Ouvrir Rayshift ↗</a></div>
-  <div class="supports-grid">
-    <section class="panel support-preview"><div class="panel-head"><div><span class="eyebrow">PUBLIC PROFILE</span><h2>Rayshift</h2></div><span class="panel-tag">ACTUALISÉ PAR RAYSHIFT</span></div><div id="rayFrameWrap" class="ray-frame-wrap"><div class="empty-state"><strong>Aucun Friend ID sélectionné</strong><span>Enregistre un identifiant pour charger le profil public.</span></div></div></section>
-    <section class="panel support-six"><div class="panel-head"><div><span class="eyebrow">DECK MAP</span><h2>6 support lists</h2></div></div><div id="supportLists" class="support-lists"></div></section>
-  </div>
-  <p class="source-note">Rayshift indique que la page publique est mise à jour lorsque le joueur modifie sa support list. L'affichage embarqué dépend toutefois des restrictions de chargement du navigateur du site Rayshift.</p>
+  <div class="support-toolbar"><div class="friend-id"><label>NA Friend ID</label><input id="supportFriendId" inputmode="numeric" placeholder="123456789"><button id="saveFriendId">Enregistrer</button><button id="refreshRayshift" class="friend-refresh">Rafraîchir</button></div><a id="rayshiftLink" class="source-btn" href="https://rayshift.io/lookup" target="_blank" rel="noopener">Ouvrir Rayshift ↗</a></div>
+  <section class="panel support-hub">
+    <div class="support-hub-top"><div><span class="eyebrow">SUPPORT DECKS</span><h2>Mes trois listes</h2></div><div class="support-mode-switch" role="tablist" aria-label="Type de support"><span class="support-mode-thumb"></span><button type="button" data-support-mode="normal" class="active">Normal</button><button type="button" data-support-mode="event">Event</button></div></div>
+    <div id="rayFrameWrap" class="ray-frame-wrap"><div class="empty-state"><strong>Aucun Friend ID sélectionné</strong><span>Enregistre un identifiant pour charger le profil public.</span></div></div>
+    <div id="supportLists" class="support-stack"></div>
+  </section>
+  <p class="source-note">Les images utilisent l’URL publique <code>deck-gen</code> de Rayshift. Les decks disponibles sont ceux que Rayshift a déjà enregistrés.</p>
 </section>
 </main></div>
 
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
-<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=30.0"></script>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=31.0"></script>
 </body></html>

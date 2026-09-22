@@ -1,6 +1,6 @@
-import initialState from './data/initial-state.json?v=30' with { type: 'json' };
-import welfareData from './data/welfare-ids.json?v=30' with { type: 'json' };
-import supportData from './data/support-lists.json?v=30' with { type: 'json' };
+import initialState from './data/initial-state.json?v=31' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=31' with { type: 'json' };
+import supportData from './data/support-lists.json?v=31' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -11,10 +11,11 @@ const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
 const NA_BLOCKED_IDS=new Set([83,149,151,168,240,333,411,412,436,443,460]);
+const isBlockedRecord=r=>NA_BLOCKED_IDS.has(Number(r?.id))||NA_BLOCKED_IDS.has(Number(r?.collectionNo));
 const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
 const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
 const SUPPORT_GUID_FALLBACKS={julien:'381d9bb7-fc83-49d2-862d-3990b4c1379c',yanis:'',attmann:''};
-const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||NA_BLOCKED_IDS.has(id)||FUTURE_NAMES.has(norm(r?.name)))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
+const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name)))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
 const IMG={
  Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
  grail:'graal.webp', np:'np.webp', Q:'quick.webp', A:'arts.webp', B:'buster.webp'
@@ -24,7 +25,7 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=sanitizeRoster(state.roster);
-let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='';
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal';
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
@@ -50,7 +51,7 @@ function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
-function isVisible(r){return !NA_BLOCKED_IDS.has(Number(r.id))&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
+function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
 function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
 function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
 function displayLevel(p,r,s){const n=Number(s.level);return Number.isFinite(n)&&n>0?n:(p==='yanis'||p==='attmann'?defaultMaxLevel(r):'—')}
@@ -132,7 +133,7 @@ function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);retur
 async function fetchAtlasList(){
   try{
     const urls=[
-      'https://api.atlasacademy.io/export/NA/basic_servant.json?v=30',
+      'https://api.atlasacademy.io/export/NA/basic_servant.json?v=31',
       'https://api.atlasacademy.io/export/NA/basic_servant.json'
     ];
     for(const url of urls){
@@ -166,12 +167,12 @@ async function syncRosterNA(){
   const keep=[];
   const pushUnique=r=>{
     const id=Number(r?.id);
-    if(!id||NA_BLOCKED_IDS.has(id)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
+    if(!id||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
     keep.push(r);
   };
   for(const r of state.roster){
     const id=Number(r.id);
-    if(NA_BLOCKED_IDS.has(id))continue;
+    if(isBlockedRecord(r))continue;
     const a=byColl.get(id);
     if(a){
       const cls=normalizeClass(a.className);
@@ -184,13 +185,13 @@ async function syncRosterNA(){
   }
   for(const a of arr){
     const id=Number(a.collectionNo),name=String(a.name||'');
-    if(!id||NA_BLOCKED_IDS.has(id))continue;
+    if(!id||isBlockedRecord(a))continue;
     const cls=normalizeClass(a.className);
     if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;
     pushUnique({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id,nonCounted:isMash(a)});
   }
   // Ereshkigal is explicitly retained even if Atlas's trimmed export lags.
-  if(!keep.some(r=>Number(r.id)===417))keep.push({...NA_FORCE_INCLUDE[0]});
+  keep.splice(0, keep.length, ...sanitizeRoster(keep));
   for(const r of keep){
     const a=byColl.get(Number(r.id));
     if(a){r.name=a.name;r.class=normalizeClass(a.className);r.rarity=atlasRarity(a);r.atlasId=a.id}
@@ -394,21 +395,23 @@ function renderSupports(){
   $('#rayshiftLink').href=fid?`https://rayshift.io/na/${String(fid).replace(/\D/g,'')}`:'https://rayshift.io/lookup';
   $('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');
   $$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});
+  $$('[data-support-mode]').forEach(b=>b.classList.toggle('active',b.dataset.supportMode===supportMode));const modeSwitch=document.querySelector('.support-mode-switch');if(modeSwitch)modeSwitch.classList.toggle('event-mode',supportMode==='event');
   const snap=supportSnapshot.players?.[supportPlayer]||{};
   const frame=$('#rayFrameWrap');
   const fidForImage=String(snap.code||fid).replace(/\D/g,'');
   const guid=snap.guid||SUPPORT_GUID_FALLBACKS[supportPlayer]||'';
+  const normalBits=[1,2,4],eventBits=[8,16,32];
+  const bits=supportMode==='event'?eventBits:normalBits;
   const present=new Set((snap.decksPresent?.length?(snap.decksPresent||[]):(SUPPORT_FALLBACK_PRESENT[supportPlayer]||[])).map(Number));
-  const imageUrls=SUPPORT_DECK_BITS.map(bit=>({bit,src:(snap.deckImages?.[String(bit)]||deckGenUrl(fidForImage,guid,bit)),present:present.has(bit)}));
+  const imageUrls=bits.map((bit,i)=>({bit,src:(snap.deckImages?.[String(bit)]||deckGenUrl(fidForImage,guid,bit)),present:present.has(bit),label:`${supportMode==='event'?'Event':'Normal'} ${i+1}`}));
   if(snap.code||fid){
-    frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>${snap.code||fid}</span></div><p>GUID Rayshift : <code>${guid||'—'}</code></p><a class="source-btn" href="https://rayshift.io/na/${String(snap.code||fid).replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`;
-  }else{
-    frame.innerHTML='<div class="empty-state"><strong>Aucune Support List synchronisée</strong><span>Le Friend ID n’a pas encore été synchronisé par GitHub Actions.</span></div>'
+    frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>${snap.code||fid}</span></div><p>${snap.lastUpdate?`Dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')}`:'Support public Rayshift'}</p><a class="source-btn" href="https://rayshift.io/na/${String(snap.code||fid).replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`;
+  } else {
+    frame.innerHTML='<div class="empty-state"><strong>Aucune Support List synchronisée</strong><span>Enregistre un Friend ID pour charger les images Rayshift.</span></div>';
   }
-  $('#supportLists').innerHTML=imageUrls.map((item,i)=>{
-    const label=SUPPORT_DECK_LABELS[i];
+  $('#supportLists').innerHTML=imageUrls.map(item=>{
     const ok=item.present||!!item.src;
-    return `<article class="support-list support-list-live"><div class="support-list-head"><div><h3>${label}</h3><small>${i<3?'Liste normale':'Liste événement'}</small></div><span class="support-status ${ok?'live':''}">${ok?'DISPONIBLE':'VIDE'}</span></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${label}" loading="lazy"></a>`:'<span class="support-empty-slot">Aucun deck retourné par Rayshift</span>'}</div></article>`;
+    return `<article class="support-list support-list-live ${item.present?'has-deck':''}"><div class="support-list-head"><div><h3>${item.label}</h3><small>${supportMode==='event'?'Support événement':'Support normal'}</small></div><span class="support-status ${ok?'live':''}">${ok?'DISPONIBLE':'VIDE'}</span></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${item.label}" loading="eager"></a>`:'<span class="support-empty-slot">Cette liste n’est pas disponible dans Rayshift.</span>'}</div></article>`;
   }).join('');
 }
 
@@ -445,6 +448,7 @@ function updateXpComputed(){
 }
 function renderXp(){
   const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit(),targetClass=xpTargetClass;
+  const totals=xpTotalsFor(p,targetClass);
   $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
     const row=inv[c];
     const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
@@ -550,5 +554,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassMenu=$('#xpClassMenu'),xpClassBtn=$('#xpClassPickerBtn'),xpClassHidden=$('#xpClassSelect'),xpClassLabel=$('#xpClassPickerLabel'),xpClassIcon=$('#xpClassPickerIcon');if(xpClassMenu){xpClassMenu.innerHTML=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'].map(c=>`<button type=\"button\" class=\"xp-class-option\" data-xp-class-value=\"${c}\">${classImg(c)}<span>${c}</span></button>`).join('');xpClassBtn.onclick=e=>{e.stopPropagation();xpClassMenu.classList.toggle('open')};$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpClassHidden.value=c;xpTargetClass=c;xpClassLabel.textContent=c;xpClassIcon.innerHTML=classImg(c);$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x===b));xpClassMenu.classList.remove('open');updateXpComputed()});document.addEventListener('click',e=>{if(!xpClassMenu.parentElement.contains(e.target))xpClassMenu.classList.remove('open')});}$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);supportLiveCache.delete(`${supportPlayer}:${fid}`);renderSupports()};if($('#refreshRayshift'))$('#refreshRayshift').onclick=async()=>{const fid=supportLocal[supportPlayer]?.friendId||'';if(!fid){toast('Renseigne un Friend ID');return}const data=await fetchRayshiftSupport(supportPlayer,fid,true);if(data){renderSupports();toast('Support List actualisée');}else toast('Rayshift indisponible ou Friend ID introuvable')};
-localCacheLoad();state.roster=sanitizeRoster(state.roster);PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);supportLiveCache.delete(`${supportPlayer}:${fid}`);renderSupports()};if($('#refreshRayshift'))$('#refreshRayshift').onclick=async()=>{const fid=supportLocal[supportPlayer]?.friendId||'';if(!fid){toast('Renseigne un Friend ID');return}const data=await fetchRayshiftSupport(supportPlayer,fid,true);if(data){renderSupports();toast('Support List actualisée');}else toast('Rayshift indisponible ou Friend ID introuvable')};
+localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]);PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
