@@ -253,3 +253,5 @@
 .release-skill-row span{min-width:0;border:1px solid #e5e9ee;background:#fbfcfd;border-radius:8px;padding:5px;text-align:center}
 .release-skill-row b{display:block;font:700 13px 'Space Grotesk';color:#586777}
 @media(max-width:900px){.hide-missing-btn{flex:1 1 auto}}
+
+.modal-footer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.modal-footer-actions .danger{border-color:#e0b8bd;background:#fff6f7;color:#a94c57}.modal-footer-actions .danger:hover{background:#fff0f2}

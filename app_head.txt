@@ -33,15 +33,16 @@ const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);r
 const fmtNum=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString('fr-FR'): '—'};
 const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math.trunc(n)):''};
 const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
+const WELFARE_NAMES=new Set((welfareData.names||[]).map(norm));
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
-const localKey='chaldea-v23-cloud-authoritative';
+const localKey='chaldea-v21-img-cache';
 function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
 function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
 function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
 function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
 function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
 function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
-function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
+function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.rarity==='Welfare'||WELFARE_NAMES.has(norm(r.name))}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
 function isVisible(r){return !NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
@@ -156,7 +157,7 @@ function inputOrRead(id,value,min,max){return currentCanEdit()?`<input class="ed
 function bondDiamonds(bond){const n=Math.max(0,Math.min(15,Number(bond)||0));const row=a=>Array.from({length:a},(_,j)=>{const i=a===10?j:j+10;return `<span class="bond-diamond ${i<n?'filled':''}"></span>`}).join('');return `<div class="bond-diamonds"><div class="bond-row bond-row-1">${row(10)}</div><div class="bond-row bond-row-2">${row(5)}</div></div><small class="bond-caption">Bond ${n||'—'} / 15</small>`}
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
 function openModalBase(r,d,urls,idx){
- const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),owned=isOwned(currentPlayer,r),cards=commandCards(d,r);
+ const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),cards=commandCards(d,r);
  const art=urls[idx]||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
@@ -165,44 +166,13 @@ function openModalBase(r,d,urls,idx){
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art">${art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="art-strip" id="artStrip">${urls.map((u,i)=>`<button class="art-thumb ${i===idx?'active':''}" data-art="${i}"><img src="${u}" alt=""></button>`).join('')}</div><div class="art-controls"><button id="artPrev">←</button><span id="artCounter">${urls.length?`${idx+1} / ${urls.length}`:'0 art'}</span><button id="artNext">→</button></div></div><div class="detail-content"><div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Base ${st.baseAtk} · Fou 3★ +1000 · <b>${1000+st.fouAtk} / 2000</b>`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Base ${st.baseHp} · Fou 3★ +1000 · <b>${1000+st.fouHp} / 2000</b>`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div></div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond)}${can?`<input class="micro-edit bond-input" id="e-bond" type="number" min="0" max="15" value="${s.bond??''}">`:''}</div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}<span>${c}</span></div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions">${owned?'<button id="unownServant" class="danger">Retirer de ma collection</button>':''}<button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art">${art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="art-strip" id="artStrip">${urls.map((u,i)=>`<button class="art-thumb ${i===idx?'active':''}" data-art="${i}"><img src="${u}" alt=""></button>`).join('')}</div><div class="art-controls"><button id="artPrev">←</button><span id="artCounter">${urls.length?`${idx+1} / ${urls.length}`:'0 art'}</span><button id="artNext">→</button></div></div><div class="detail-content"><div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Base ${st.baseAtk} · Fou 3★ +1000 · <b>${1000+st.fouAtk} / 2000</b>`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Base ${st.baseHp} · Fou 3★ +1000 · <b>${1000+st.fouHp} / 2000</b>`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div></div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond)}${can?`<input class="micro-edit bond-input" id="e-bond" type="number" min="0" max="15" value="${s.bond??''}">`:''}</div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}<span>${c}</span></div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
  $('#modalCancel').onclick=closeModal;
- let current=idx;function show(i){if(!urls.length)return;current=(i+urls.length)%urls.length;if($('#detailMainImg'))$('#detailMainImg').src=urls[current];$('#artCounter').textContent=`${current+1} / ${urls.length}`;$$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',j===current))}$('#artPrev').onclick=()=>show(current-1);$('#artNext').onclick=()=>show(current+1);$$('.art-thumb').forEach(b=>b.onclick=()=>show(Number(b.dataset.art)));if(can){$('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
+ let current=idx;function show(i){if(!urls.length)return;current=(i+urls.length)%urls.length;if($('#detailMainImg'))$('#detailMainImg').src=urls[current];$('#artCounter').textContent=`${current+1} / ${urls.length}`;$$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',j===current))}$('#artPrev').onclick=()=>show(current-1);$('#artNext').onclick=()=>show(current+1);$$('.art-thumb').forEach(b=>b.onclick=()=>show(Number(b.dataset.art)));if(can)$('#saveServant').onclick=()=>saveModal(Number(r.id));
 }
 function idNormalize(id){return Number(id)}
 async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d);openModalBase(r,d,urls,0);}
-async function saveModal(id){
- const s=ensureStats(currentPlayer,id);
- s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));
- s.np=num($('#e-np')?.value);
- s.bond=Math.max(0,Math.min(15,num($('#e-bond')?.value)||0));
- s.grail=Math.max(0,Math.min(15,num($('#e-grail')?.value)||0));
- s.fouHp=Math.max(0,Math.min(1000,num($('#e-fouhp')?.value)||0));
- s.fouAtk=Math.max(0,Math.min(1000,num($('#e-fouatk')?.value)||0));
- s.skills=[0,1,2].map(i=>{const v=num($('#skill-'+i)?.value);return v==null?null:Math.max(1,Math.min(10,v))});
- s.appendSkills=[0,1,2,3,4].map(i=>{const v=num($('#append-'+i)?.value);return v==null?null:Math.max(0,Math.min(10,v))});
- if(cloudEnabled&&session&&currentCanEdit()){
-   const ok=await persistStat(id);
-   if(!ok)return;
-   localCacheSave();
-   closeModal();renderAll();toast('Servant enregistré dans Supabase');
- }else{
-   localCacheSave();
-   closeModal();renderAll();toast('Servant enregistré localement');
- }
-}
-async function unownServant(id){
- const s=ensureStats(currentPlayer,id);
- s.level=null;s.np=null;s.bond=null;s.grail=null;s.fouHp=null;s.fouAtk=null;s.servantCoins=null;
- s.skills=[null,null,null];s.appendSkills=[null,null,null,null,null];
- if(cloudEnabled&&session&&currentCanEdit()){
-   const ok=await persistStat(id);
-   if(!ok)return;
-   localCacheSave();closeModal();renderAll();toast('Servant retiré de ta collection');
- }else{
-   localCacheSave();closeModal();renderAll();toast('Servant retiré localement');
- }
-}
+async function saveModal(id){const s=ensureStats(currentPlayer,id);s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));s.np=num($('#e-np')?.value);s.bond=Math.max(0,Math.min(15,num($('#e-bond')?.value)||0));s.grail=Math.max(0,Math.min(15,num($('#e-grail')?.value)||0));s.fouHp=Math.max(0,Math.min(1000,num($('#e-fouhp')?.value)||0));s.fouAtk=Math.max(0,Math.min(1000,num($('#e-fouatk')?.value)||0));s.skills=[0,1,2].map(i=>{const v=num($('#skill-'+i)?.value);return v==null?null:Math.max(1,Math.min(10,v))});s.appendSkills=[0,1,2,3,4].map(i=>{const v=num($('#append-'+i)?.value);return v==null?null:Math.max(0,Math.min(10,v))});localCacheSave();await persistStat(id);closeModal();renderAll();toast(cloudEnabled&&session&&currentCanEdit()?'Servant enregistré':'Servant enregistré localement')}
 function closeModal(){$('#modalBackdrop').classList.remove('open')}
 function localCacheSave(){localStorage.setItem(localKey,JSON.stringify(state.players))}
 function localCacheLoad(){try{const x=JSON.parse(localStorage.getItem(localKey));if(!x)return;/* Never restore legacy friend snapshots locally: older builds mixed skill columns into level/bond/grail. */if(x.julien)state.players.julien=x.julien;/* XP is kept per profile below; Yanis/Attmann come from the bundled clean snapshot or Supabase. */}catch{}}
@@ -288,115 +258,3 @@ function updateXpComputed(){
   const summary=$('#xpTargetSummary');
   if(summary) summary.innerHTML=`<div class="xp-result-primary"><div><span>XP À FOURNIR</span><strong>${xpFmt(d.need)}</strong><small>${d.cur} → ${d.target}</small></div><div class="xp-result-status ${remaining===0?'ready':''}"><b>${remaining===0?'OBJECTIF COUVERT':'IL RESTE'}</b><strong>${remaining===0?'✓':xpFmt(remaining)}</strong><span>${remaining===0?'ton stock suffit':'XP à réunir'}</span></div></div><div class="xp-result-cards">${cards.map(([l,v])=>`<div><b>${fmtNum(v)}</b><span>${l}</span></div>`).join('')}</div>`;
   const hint=$('#xpStockHint');
-  if(hint) hint.innerHTML=remaining===0?'<strong>Stock suffisant</strong><span>Ton inventaire couvre cet objectif en XP brute.</span>':`<strong>${xpFmt(remaining)} XP manquants</strong><span>Le calcul te donne le volume d’XP encore nécessaire.</span>`;
-  $$('[data-xp-goal]').forEach(b=>b.classList.toggle('active',b.dataset.xpGoal===String(d.target)));
-}
-function renderXp(){
-  const p=currentPlayer,inv=xpInventory(p),can=currentCanEdit(),totals=xpTotalsFor(p);
-  $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
-    const row=inv[c];
-    const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
-    const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);
-    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other"></span>':classImg(c)}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`;
-  }).join('');
-  const grand=[5,4,3].map(st=>XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0));
-  $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${grand.map(v=>`<th>${fmtNum(v)}</th>`).join('')}<th>${xpFmt(totals.random)}</th><th>${xpFmt(totals.classBonus)}</th></tr>`;
-  $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<button class="xp-milestone modern" data-xp-milestone="${l}"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★</small></button>`).join('');
-  $$('.xp-stock-input').forEach(i=>i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Math.floor(Number(i.value)||0));clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(saveXpCloud,600);updateXpComputed()});
-  $$('.xp-milestone').forEach(b=>b.onclick=()=>{$('#xpTargetLevel').value=b.dataset.xpMilestone;updateXpComputed()});
-  updateXpComputed();
-}
-
-function navigate(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP'}[v];$('#sidebar').classList.remove('open');renderAll()}
-function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp()}
-async function persistStat(id){
- if(!cloudEnabled||!cloud||!session||!currentCanEdit()){
-   toast('Impossible de synchroniser ce Servant : compte non éditeur');
-   return false;
- }
- const s=stats(currentPlayer,id);
- const body={
-   player_key:currentPlayer,
-   servant_id:Number(id),
-   level:s.level,
-   np:s.np,
-   bond:s.bond,
-   grail:s.grail,
-   fou_hp:s.fouHp,
-   fou_atk:s.fouAtk,
-   servant_coins:s.servantCoins,
-   skills:s.skills||[null,null,null],
-   append_skills:s.appendSkills||[null,null,null,null,null],
-   updated_at:new Date().toISOString()
- };
- const {data,error}=await cloud
-   .from('chaldea_stats')
-   .upsert(body,{onConflict:'player_key,servant_id',ignoreDuplicates:false})
-   .select('player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills')
-   .single();
- if(error){
-   updateSync('Supabase · erreur sauvegarde',true);
-   toast('Erreur Supabase : '+error.message);
-   return false;
- }
- if(!data || String(data.player_key)!==String(currentPlayer) || Number(data.servant_id)!==Number(id)){
-   updateSync('Supabase · sauvegarde non confirmée',true);
-   toast('La sauvegarde du Servant n’a pas pu être confirmée');
-   return false;
- }
- updateSync('Cloud · synchronisé');
- return true;
-}
-async function refreshPublicStats(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_stats').select('*');if(error){updateSync('Supabase · lecture refusée',true);return}let changed=false;for(const x of data||[]){const ss=ensureStats(x.player_key,x.servant_id);const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:x.skills||[null,null,null],appendSkills:x.append_skills||[null,null,null,null,null]};if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}}if(changed){localCacheSave();if(currentView==='overview')renderOverview();else if(currentView==='compare')renderCompare()}}
-async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
-async function saveAllToSupabase(){
- if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
- try{
-  const now=new Date().toISOString();const rows=Object.entries(state.players[currentPlayer]?.stats||{}).map(([id,st])=>({player_key:currentPlayer,servant_id:Number(id),level:st.level,np:st.np,bond:st.bond,grail:st.grail,fou_hp:st.fouHp,fou_atk:st.fouAtk,servant_coins:st.servantCoins,skills:st.skills||[null,null,null],append_skills:st.appendSkills||[null,null,null,null,null],updated_at:now}));
-  for(let i=0;i<rows.length;i+=100){const {error}=await cloud.from('chaldea_stats').upsert(rows.slice(i,i+100),{onConflict:'player_key,servant_id'});if(error)throw error}
-  const {error:xe}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:xpInventory(currentPlayer),updated_at:now},{onConflict:'player_key'});if(xe)throw xe;
-  const {error:se}=await cloud.from('chaldea_support_profiles').upsert({player_key:currentPlayer,friend_id:supportLocal[currentPlayer]?.friendId||null,updated_at:now},{onConflict:'player_key'});if(se)throw se;
-  localCacheSave();updateSync('Cloud · toutes les données synchronisées');toast('Toutes tes données sont enregistrées dans Supabase');await refreshPublicStats();await loadXpCloud();await loadSupportProfiles();return true;
- }catch(error){toast('Erreur Supabase : '+(error?.message||error));return false}
-}
-async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit())return;const inv=xpInventory(currentPlayer);const {error}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:inv,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)console.warn('XP sync',error.message)}
-async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
-async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
-async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
-async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
-function showSeedBanner(){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{await seedCurrentPlayer();div.remove()};document.body.appendChild(div)}
-function updateEditVisibility(){$('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion'}
-async function resolveMembership(){if(!cloud||!session)return;const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',session.user.id).maybeSingle();if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync(error.code==='401'?'Supabase · clé/API refusée':'Supabase · lecture refusée',true);return}cloudAuthError='';currentAuth=data?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;if(data?.player_key){currentPlayer=data.player_key;supportPlayer=data.player_key;}if(data&&state.players[data.player_key])state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility()}
-async function claimJulien(){if(!cloud||!session)return;const {data,error}=await cloud.rpc('claim_julien');if(error){toast(error.message);return}await resolveMembership();renderAll();toast('Compte associé à Julien')}
-async function setupCloud(){
-  if(!CONFIG.supabaseUrl||!SUPABASE_KEY||!window.supabase){updateSync('Cloud non configuré',true);return}
-  cloud=window.supabase.createClient(CONFIG.supabaseUrl,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  cloudEnabled=true;
-  const got=await cloud.auth.getSession();
-  session=got.data.session||null;
-  if(session){
-    await resolveMembership();
-    updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);
-    await loadCloud();
-  }else{
-    const probe=await cloud.from('chaldea_stats').select('player_key').limit(1);
-    if(probe.error){updateSync('Supabase · clé/API refusée',true);console.warn('Supabase REST:',probe.error.message)}
-    else updateSync('Cloud · lecture publique');
-    await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();
-  }
-  cloud.auth.onAuthStateChange((_event,ses)=>{setTimeout(async()=>{session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
-  // Realtime is optional. If the WebSocket is unavailable, keep the site functional and poll instead.
-  if(CONFIG.enableRealtime===true){try{cloud.channel('chaldea-live').on('postgres_changes',{event:'*',schema:'public',table:'chaldea_stats'},()=>refreshPublicStats()).subscribe(()=>{});}catch(e){console.warn('Supabase Realtime disabled',e)}}
-  setInterval(async()=>{if(document.visibilityState==='visible'&&cloudEnabled)await refreshPublicStats()},15000);
-}
-function accountUI(){
- const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
- $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${session.user.email}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${cloudAuthError}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte Julien</b><span>Utilise cette action uniquement si ce compte doit devenir le compte Julien.</span><button class="save" id="claimJulien">Associer à Julien</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email"><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe"></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
- $('#modalBackdrop').classList.add('open');
- $('#modalCancel').onclick=closeModal;
- if(logged&&missing){$('#claimJulien').onclick=claimJulien}else if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{await cloud.auth.signOut();session=null;currentAuth=null;cloudAuthError='';updateSync('Cloud · lecture publique');renderAll();closeModal()}}
- else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
-}
-$('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};$('#supportFriendId').oninput=e=>{supportLocal[supportPlayer].friendId=e.target.value.replace(/\D/g,'')};$('#saveFriendId').onclick=async()=>{const fid=supportLocal[supportPlayer].friendId||'';await saveSupportProfile(supportPlayer,fid);renderSupports()};
-localCacheLoad();PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
