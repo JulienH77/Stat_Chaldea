@@ -255,3 +255,10 @@
 @media(max-width:900px){.hide-missing-btn{flex:1 1 auto}}
 
 .modal-footer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.modal-footer-actions .danger{border-color:#e0b8bd;background:#fff6f7;color:#a94c57}.modal-footer-actions .danger:hover{background:#fff0f2}
+
+/* V24 interaction polish */
+.danger-quiet{height:28px!important;padding:0 9px!important;border:0!important;background:transparent!important;color:#a98a8f!important;font-size:9px!important;font-weight:600!important;opacity:.28;box-shadow:none!important}
+.danger-quiet:hover{opacity:1;background:#fff4f5!important;color:#a94c57!important}
+.bond-diamonds.bond-editable{gap:6px 7px!important}
+.bond-editable .bond-diamond{appearance:none;-webkit-appearance:none;padding:0;cursor:pointer}
+.bond-editable .bond-diamond:hover{transform:rotate(45deg) scale(1.15);border-color:#b48c2e;box-shadow:0 0 0 2px rgba(180,140,46,.10)}
