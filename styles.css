@@ -262,3 +262,6 @@
 .bond-diamonds.bond-editable{gap:6px 7px!important}
 .bond-editable .bond-diamond{appearance:none;-webkit-appearance:none;padding:0;cursor:pointer}
 .bond-editable .bond-diamond:hover{transform:rotate(45deg) scale(1.15);border-color:#b48c2e;box-shadow:0 0 0 2px rgba(180,140,46,.10)}
+
+/* V25 bond hover preview */
+.bond-editable .bond-diamond.hovered{border-color:#b48c2e;box-shadow:0 0 0 2px rgba(180,140,46,.12);}

@@ -52,3 +52,46 @@ Yanis and Attmann are rebuilt strictly from columns ID, servant, NP, Skill 1, Sk
 - Compare keeps the selected Showdown Servant across refreshes, removes possession/coins rows, adds skills + append skill blocks, and uses Julien red, Yanis blue, Attmann green in the radar.
 - Added a one-click "Enregistrer toutes mes données" action in the authenticated editor account dialog for Servant stats, XP inventory and support Friend ID.
 - No database schema changes are introduced in V17; do not rerun SQL just for this release.
+
+## V25 · automatisation du snapshot cloud
+
+Le dépôt peut maintenant reconstruire automatiquement `data/initial-state.json` à partir des données Supabase et du catalogue Atlas Academy NA.
+
+Le workflow `.github/workflows/sync-initial-state.yml` s'exécute chaque dimanche à 04:30 UTC et peut aussi être lancé manuellement avec **Actions → Sync cloud snapshot → Run workflow**.
+
+Le script `tools/sync-initial-state.mjs` :
+
+- récupère toutes les lignes de `chaldea_stats` pour Julien, Yanis et Attmann ;
+- récupère l'inventaire XP `chaldea_xp` ;
+- actualise le catalogue Servants depuis l'export NA Atlas Academy ;
+- reconstruit le snapshot local sans recopier les anciennes valeurs personnelles absentes du cloud ;
+- commit/push `data/initial-state.json` uniquement lorsqu'il a changé.
+
+### Secrets GitHub nécessaires
+
+Créer dans **Settings → Secrets and variables → Actions** :
+
+- `SUPABASE_URL` = URL du projet Supabase ;
+- `SUPABASE_SECRET_KEY` = clé secrète Supabase (`sb_secret_...`).
+
+La clé secrète doit rester uniquement dans GitHub Actions : elle possède des privilèges élevés et ne doit jamais être placée dans `config.js` ni dans le code envoyé au navigateur. La clé publishable (`sb_publishable_...`) reste celle de l'application web. citeturn594621search5turn594621search2
+
+Le workflow utilise uniquement `GITHUB_TOKEN` pour committer la nouvelle version du fichier, avec `contents: write`; aucun Personal Access Token GitHub n'est nécessaire.
+
+### Pourquoi le snapshot peut aider
+
+`initial-state.json` sert de snapshot local immédiat. Le site peut ainsi afficher immédiatement les données de base puis synchroniser Supabase en arrière-plan. Le snapshot hebdomadaire réduit aussi le risque de perdre une base de départ à jour.
+
+### Welfare
+
+`data/welfare-ids.json` reste une liste explicite. Je ne l'écrase pas automatiquement depuis Atlas Academy : la documentation publique Atlas décrit le catalogue et les données Servant, mais ne fournit pas dans la documentation du Servant un champ Welfare suffisamment explicite pour faire une classification fiable. Une automatisation trop agressive pourrait reproduire le problème de Servants homonymes (par exemple plusieurs variantes de BB). Le fichier doit donc être mis à jour lorsqu'un nouveau Welfare arrive.
+
+### Changement de fréquence
+
+Pour un snapshot mensuel, remplacer dans `.github/workflows/sync-initial-state.yml` :
+
+`30 4 * * 0`
+
+par une expression cron mensuelle, par exemple le premier jour du mois à 04:30 UTC :
+
+`30 4 1 * *`
