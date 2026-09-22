@@ -2,7 +2,7 @@ import initialState from './data/initial-state.json' with { type: 'json' };
 import welfareData from './data/welfare-ids.json' with { type: 'json' };
 import supportData from './data/support-lists.json' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
-supportSnapshot=supportData||{players:{}};
+let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
 const PLAYERS=['julien','yanis','attmann'];
 const PLAYER_LABELS={julien:'Julien',yanis:'Yanis',attmann:'Attmann'};
@@ -26,7 +26,6 @@ let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='de
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
-let supportSnapshot={players:{}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
 const XP_CARD_CLASS_VALUE={5:97200,4:32400,3:10800};
