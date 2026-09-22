@@ -265,3 +265,9 @@
 
 /* V25 bond hover preview */
 .bond-editable .bond-diamond.hovered{border-color:#b48c2e;box-shadow:0 0 0 2px rgba(180,140,46,.12);}
+
+/* V26 — secondary collection action + stable Bond hover */
+.detail-content{position:relative}
+.detail-danger-corner{position:absolute;top:16px;right:16px;width:22px!important;height:22px!important;padding:0!important;display:grid;place-items:center;border:0!important;background:transparent!important;color:#a98a8f!important;border-radius:50%;font-size:15px!important;line-height:1!important;opacity:.10;cursor:pointer}
+.detail-danger-corner:hover{opacity:.8!important;background:#fff4f5!important;color:#a94c57!important}
+.bond-editable .bond-diamond.hovered{transition:border-color .12s ease,box-shadow .12s ease}

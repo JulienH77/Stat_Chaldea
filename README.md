@@ -95,3 +95,8 @@ Pour un snapshot mensuel, remplacer dans `.github/workflows/sync-initial-state.y
 par une expression cron mensuelle, par exemple le premier jour du mois à 04:30 UTC :
 
 `30 4 1 * *`
+
+
+### Configuration client / GitHub Actions
+
+`config.js` contient uniquement l'URL Supabase et la clé publishable destinées au navigateur. La clé secrète `SUPABASE_SECRET_KEY` n'est jamais placée dans `config.js` : elle est utilisée uniquement par le workflow GitHub Actions via les secrets du dépôt.
