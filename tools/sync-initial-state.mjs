@@ -8,6 +8,8 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const ATLAS_URL = 'https://api.atlasacademy.io/export/NA/basic_servant.json';
 const PLAYERS = ['julien', 'yanis', 'attmann'];
 const FUTURE_NAMES = new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
+const NA_BLOCKED_IDS = new Set([83,149,151,168,240,333,411,412,436,443,460]);
+const FORCE_INCLUDE = [{id:417,name:'Space Ereshkigal',class:'Beast',rarity:'SSR',atlasId:417}];
 const PLAYER_LABELS = {julien:'Julien', yanis:'Yanis', attmann:'Attmann'};
 const EMPTY = () => ({level:null,bond:null,grail:null,fouHp:null,fouAtk:null,np:null,skills:[null,null,null],appendSkills:[null,null,null,null,null],servantCoins:null});
 
@@ -73,6 +75,7 @@ const seen = new Set();
 for (const r of state.roster || []) {
   const a = byCollection.get(Number(r.id));
   if (!a) continue;
+  if (NA_BLOCKED_IDS.has(Number(r.id))) continue;
   if (classKey(a.className) === 'Extra') continue;
   if (FUTURE_NAMES.has(String(a.name || ''))) continue;
   roster.push({
@@ -88,7 +91,7 @@ for (const r of state.roster || []) {
 
 for (const a of atlasList) {
   const id = Number(a.collectionNo);
-  if (!id || seen.has(id) || isMash(a)) continue;
+  if (!id || seen.has(id) || isMash(a) || NA_BLOCKED_IDS.has(id)) continue;
   if (classKey(a.className) === 'Extra') continue;
   if (FUTURE_NAMES.has(String(a.name || ''))) continue;
   roster.push({
@@ -101,6 +104,10 @@ for (const a of atlasList) {
     atlasId: Number(a.id)
   });
   seen.add(id);
+}
+roster.sort((a,b)=>a.id-b.id);
+for (const forced of FORCE_INCLUDE) {
+  if (!seen.has(Number(forced.id)) && !NA_BLOCKED_IDS.has(Number(forced.id))) roster.push({...forced});
 }
 roster.sort((a,b)=>a.id-b.id);
 

@@ -1,6 +1,8 @@
 import initialState from './data/initial-state.json' with { type: 'json' };
 import welfareData from './data/welfare-ids.json' with { type: 'json' };
+import supportData from './data/support-lists.json' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
+supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
 const PLAYERS=['julien','yanis','attmann'];
 const PLAYER_LABELS={julien:'Julien',yanis:'Yanis',attmann:'Attmann'};
@@ -8,6 +10,8 @@ const CLASS_ORDER=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berser
 const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
+const NA_BLOCKED_IDS=new Set([83,149,151,168,240,333,411,412,436,443,460]);
+const NA_FORCE_INCLUDE=[{id:417,name:'Space Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Arts',atlasId:417}];
 const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
 const IMG={
  Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
@@ -17,11 +21,12 @@ const IMG_BASE='./IMG/';
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
-state.roster=(state.roster||[]).filter(r=>!FUTURE_NAMES.has(norm(r.name)));
+state.roster=(state.roster||[]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&!FUTURE_NAMES.has(norm(r.name)));
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
 const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
+let supportSnapshot={players:{}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
 const XP_CARD_CLASS_VALUE={5:97200,4:32400,3:10800};
@@ -44,7 +49,7 @@ function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
-function isVisible(r){return !NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
+function isVisible(r){return !NA_BLOCKED_IDS.has(Number(r.id))&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
 function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
 function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
 function displayLevel(p,r,s){const n=Number(s.level);return Number.isFinite(n)&&n>0?n:(p==='yanis'||p==='attmann'?defaultMaxLevel(r):'—')}
@@ -124,9 +129,57 @@ function renderRoster(){
 async function loadCardImages(rows,token){let i=0;const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));const workers=Array.from({length:6},async()=>{while(i<rows.length){const row=rows[i++];if(token!==renderToken)return;const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);if(!holder)continue;const d=await atlasDetail(row.r);const url=imageList(d)[0]||guessImage(row.r.atlasId);if(url){const img=new Image();img.decoding='async';img.onload=()=>{if(token!==renderToken)return;holder.innerHTML='';holder.appendChild(img);const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');const ni=npIcon();if(chip&&ni)chip.innerHTML=ni};img.onerror=()=>holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';img.src=url}else holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>'}});await Promise.all(workers);const mode=$('#sortFilter')?.value;if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster()}
 function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
 async function fetchAtlasList(){
- try{const r=await fetch('https://api.atlasacademy.io/export/NA/basic_servant.json',{cache:'no-store'});if(r.ok){const raw=await r.json();const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.data)?raw.data:[]);if(arr.length)return arr}}catch(e){console.warn('Atlas static export NA indisponible',e)}
- try{const url='https://api.atlasacademy.io/nice/NA/servant/search?className=saber&className=archer&className=lancer&className=rider&className=caster&className=assassin&className=berserker&className=shielder&className=ruler&className=alterEgo&className=avenger&className=moonCancer&className=foreigner&className=pretender&className=beast';const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error(r.status);const arr=await r.json();return Array.isArray(arr)?arr:[]}catch(e){console.warn('Atlas NA list indisponible',e);return[]} }
-async function syncRosterNA(){const arr=await fetchAtlasList();if(!arr.length){$('#atlasStatus').textContent='ATLAS / NA · indisponible';return}const byColl=new Map(arr.map(x=>[Number(x.collectionNo),x]));const keep=[];for(const r of state.roster){const a=byColl.get(Number(r.id));if(a&&classKey(normalizeClass(a.className))!=='Extra'&&!FUTURE_NAMES.has(norm(a.name)))keep.push({...r,name:a.name,class:normalizeClass(a.className),rarity:atlasRarity(a),atlasId:a.id});else if(isMash(r))keep.push({...r,nonCounted:true,atlasId:r.atlasId||r.id})}const seen=new Set(keep.map(r=>Number(r.id)));for(const a of arr){const id=Number(a.collectionNo),name=String(a.name||'');if(id<=0||isMash({id,name}))continue;const cls=normalizeClass(a.className);if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;if(!seen.has(id)){keep.push({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id});PLAYERS.forEach(p=>ensureStats(p,id));}}for(const r of keep){const a=byColl.get(Number(r.id));if(a){r.name=a.name;r.class=normalizeClass(a.className);r.rarity=atlasRarity(a);r.atlasId=a.id}}state.roster=keep.sort((a,b)=>Number(a.id)-Number(b.id));PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));fillFilters();renderAll();$('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`}
+  try{
+    const url='https://api.atlasacademy.io/nice/NA/servant/search?type=normal&type=heroine&className=saber&className=archer&className=lancer&className=rider&className=caster&className=assassin&className=berserker&className=shielder&className=ruler&className=alterEgo&className=avenger&className=moonCancer&className=foreigner&className=pretender&className=beast';
+    const r=await fetch(url,{cache:'no-store'});
+    if(r.ok){const arr=await r.json();if(Array.isArray(arr)&&arr.length)return arr}
+  }catch(e){console.warn('Atlas NA playable list indisponible',e)}
+  try{
+    const r=await fetch('https://api.atlasacademy.io/export/NA/basic_servant.json',{cache:'no-store'});
+    if(r.ok){const raw=await r.json();const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.data)?raw.data:[]);if(arr.length)return arr}
+  }catch(e){console.warn('Atlas static export NA indisponible',e)}
+  return []
+}
+
+async function syncRosterNA(){
+  const arr=await fetchAtlasList();
+  if(!arr.length){$('#atlasStatus').textContent='ATLAS / NA · indisponible';return}
+  const byColl=new Map(arr.map(x=>[Number(x.collectionNo),x]));
+  const keep=[];
+  for(const r of state.roster){
+    const a=byColl.get(Number(r.id));
+    if(NA_BLOCKED_IDS.has(Number(r.id)))continue;
+    if(a&&classKey(normalizeClass(a.className))!=='Extra'&&!FUTURE_NAMES.has(norm(a.name))){
+      keep.push({...r,name:a.name,class:normalizeClass(a.className),rarity:atlasRarity(a),atlasId:a.id});
+    }else if(isMash(r)){
+      keep.push({...r,nonCounted:true,atlasId:r.atlasId||r.id});
+    }
+  }
+  const seen=new Set(keep.map(r=>Number(r.id)));
+  for(const a of arr){
+    const id=Number(a.collectionNo),name=String(a.name||'');
+    if(!id||NA_BLOCKED_IDS.has(id)||isMash(a))continue;
+    const cls=normalizeClass(a.className);
+    if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;
+    if(!seen.has(id)){
+      keep.push({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id});
+      PLAYERS.forEach(p=>ensureStats(p,id));
+      seen.add(id);
+    }
+  }
+  for(const forced of NA_FORCE_INCLUDE){
+    if(!seen.has(Number(forced.id))){keep.push({...forced});PLAYERS.forEach(p=>ensureStats(p,forced.id));seen.add(Number(forced.id));}
+  }
+  for(const r of keep){
+    const a=byColl.get(Number(r.id));
+    if(a){r.name=a.name;r.class=normalizeClass(a.className);r.rarity=atlasRarity(a);r.atlasId=a.id}
+  }
+  state.roster=keep.filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))).sort((a,b)=>Number(a.id)-Number(b.id));
+  PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
+  fillFilters();renderAll();
+  $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+}
+
 function normalizeClass(c){const s=String(c||'').toLowerCase().replace(/[^a-z]/g,'');const m={saber:'Saber',archer:'Archer',lancer:'Lancer',rider:'Rider',caster:'Caster',assassin:'Assassin',berserker:'Berserker',ruler:'Ruler',avenger:'Avenger',alterego:'Alter Ego',mooncancer:'Moon Cancer',foreigner:'Foreigner',pretender:'Pretender',shielder:'Shielder',beast:'Beast'};return m[s]||'Extra'}
 function atlasRarity(x){return Number(x.rarity)>=5?'SSR':Number(x.rarity)===4?'SR':Number(x.rarity)===3?'R':Number(x.rarity)===2?'UC':'C'}
 async function atlasDetail(r){const key=Number(r.atlasId||r.id);if(!key)return null;if(atlasFull.has(key))return atlasFull.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();const d=await res.json();atlasById.set(Number(key),d);if(d?.collectionNo!=null)atlasById.set(Number(d.collectionNo),d);return d}catch{return null}})();atlasFull.set(key,p);return p}
@@ -274,7 +327,31 @@ function renderRadar(colors){
  $('#radarLegend').innerHTML=all.map(x=>`<span class="legend-item"><i class="legend-dot" style="background:${x.color}"></i><b>${PLAYER_LABELS[x.p]}</b></span>`).join('');
  el.innerHTML=`<div class="radar-shell"><svg class="radar-svg" viewBox="0 0 700 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Profil de progression comparé">${rings}${axes}<circle cx="${cx}" cy="${cy}" r="4" fill="#637181"/>${all.map(x=>`<polygon points="${x.pts}" fill="${x.color}" fill-opacity=".12" stroke="${x.color}" stroke-width="3"/>${x.dots}`).join('')}</svg><div class="radar-note">Échelle visuelle renforcée : les faibles pourcentages restent lisibles. Les valeurs réelles sont celles affichées dans les statistiques ci-dessus.</div></div>`;
 }
-function renderSupports(){supportPlayer=currentPlayer;const fid=supportLocal[supportPlayer]?.friendId||'';$('#supportFriendId').value=fid;$('#rayshiftLink').href=fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup';$('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');$$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});const frame=$('#rayFrameWrap');if(fid){frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>Friend ID ${fid}</span></div><p>Le profil Rayshift est public, mais son contenu ne peut pas être lu directement par GitHub Pages à cause des restrictions cross-origin. Le site est prêt à recevoir un proxy Supabase pour importer les 6 decks et les afficher ici sans iframe.</p><a class="source-btn" href="https://rayshift.io/na/${fid.replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`}else{frame.innerHTML='<div class="empty-state"><strong>Aucun Friend ID</strong><span>Ajoute le Friend ID NA pour préparer la synchronisation.</span></div>'}const lists=Array.from({length:6},(_,i)=>({name:`${i<3?'Normal':'Event'} ${i%3+1}`,event:i>=3}));$('#supportLists').innerHTML=lists.map((l,i)=>`<article class="support-list"><div class="support-list-head"><div><h3>${l.name}</h3><small>${l.event?'Liste événement':'Liste normale'}</small></div><span class="support-status">${fid?'À SYNCHRONISER':'À CONFIGURER'}</span></div><div class="support-placeholder"><strong>Deck ${i+1}</strong><span>Le contenu apparaîtra ici après synchronisation Rayshift → Supabase.</span><a href="${fid?`https://rayshift.io/na/${fid.replace(/\D/g,'')}`:'https://rayshift.io/lookup'}" target="_blank" rel="noopener">Ouvrir la source ↗</a></div></article>`).join('')}
+function renderSupports(){
+  const fid=supportLocal[supportPlayer]?.friendId||supportSnapshot.players?.[supportPlayer]?.code||'';
+  $('#supportFriendId').value=fid;
+  $('#rayshiftLink').href=fid?`https://rayshift.io/na/${String(fid).replace(/\D/g,'')}`:'https://rayshift.io/lookup';
+  $('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');
+  $$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});
+  const snap=supportSnapshot.players?.[supportPlayer]||{};
+  const frame=$('#rayFrameWrap');
+  const decks=snap.decks||{};
+  const flags=[1,2,4,8,16,32];
+  const labels=['Normal 1','Normal 2','Normal 3','Event 1','Event 2','Event 3'];
+  const present=new Set((snap.decksPresent||[]).map(Number));
+  if(snap.code||fid){
+    frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>${snap.code||fid}</span></div><p>Dernière synchronisation : ${snap.lastUpdate?new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR'):'—'}.</p><a class="source-btn" href="https://rayshift.io/na/${String(snap.code||fid).replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`
+  }else{
+    frame.innerHTML='<div class="empty-state"><strong>Aucune Support List synchronisée</strong><span>Le Friend ID n’a pas encore été synchronisé par GitHub Actions.</span></div>'
+  }
+  $('#supportLists').innerHTML=flags.map((flag,i)=>{
+    const path=decks[String(flag)]||decks[flag];
+    const src=path?(String(path).startsWith('http')?path:`https://rayshift.io${path}`):'';
+    const ok=present.has(flag)||!!path;
+    return `<article class="support-list support-list-live"><div class="support-list-head"><div><h3>${labels[i]}</h3><small>${i<3?'Liste normale':'Liste événement'}</small></div><span class="support-status ${ok?'live':''}">${ok?'SYNCHRONISÉ':'VIDE'}</span></div><div class="support-deck-preview">${src?`<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${labels[i]}" loading="lazy"></a>`:'<span class="support-empty-slot">Aucun deck retourné par Rayshift</span>'}</div></article>`;
+  }).join('');
+}
+
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p){const inv=xpInventory(p);let random=0,classBonus=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);random+=n*XP_CARD_VALUE[star];classBonus+=n*XP_CARD_CLASS_VALUE[star]}}return{random,classBonus}}
 function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(a,Math.min(120,Number(to)||120));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
