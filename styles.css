@@ -322,3 +322,7 @@
 
 /* V32 support cleanup */
 .support-clean{display:flex;justify-content:flex-end;align-items:center;padding:0 2px 2px;color:#7b8997;font-size:10px}.support-list-live .support-list-head{padding:0 2px 8px}.support-list-live .support-list-head h3{margin:0;font:800 15px 'Space Grotesk'}.support-list-live .support-deck-preview{width:100%;padding:8px;background:#f1f4f7;border:1px solid #e0e6ec;border-radius:16px;box-shadow:0 12px 28px rgba(40,56,72,.08)}.support-list-live .support-deck-preview img{width:100%;height:auto;display:block;border-radius:10px}.support-list-live{border:0;background:transparent}.support-hub-top{justify-content:flex-end}.support-stack{width:min(92%,1180px)}
+
+/* V33 hardening: sticky topbar must stay above XP class selector while scrolling. */
+.topbar{z-index:100!important}
+.xp-class-field{z-index:5!important}
