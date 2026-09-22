@@ -1,29 +1,36 @@
 {
-  "version": 4,
-  "source": "Rayshift public API / deck-gen",
+  "version": 2,
+  "source": "Rayshift public API",
   "region": "NA",
-  "updatedAt": null,
+  "updatedAt": "2026-09-22T19:35:55.629Z",
   "players": {
     "julien": {
       "code": "939739133",
-      "name": "Julien",
-      "lastUpdate": null,
-      "lastLogin": null,
-      "guid": "381d9bb7-fc83-49d2-862d-3990b4c1379c",
+      "name": "oShaRKio",
+      "lastUpdate": 1790105693,
+      "lastLogin": 1790104066,
+      "guid": "bd90b909-cebe-4837-a773-9faef0f15133",
       "decksPresent": [
         1,
         2,
-        4
+        4,
+        8,
+        16,
+        32
       ],
-      "decks": {},
+      "decks": {
+        "0": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/8/1.png"
+      },
       "deckImages": {
-        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/1/9.png",
-        "2": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/2/9.png",
-        "4": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/4/9.png",
-        "8": "",
-        "16": "",
-        "32": ""
-      }
+        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/939739133/bd90b909-cebe-4837-a773-9faef0f15133/32/9.png"
+      },
+      "message": "ok"
     },
     "yanis": {
       "code": "",
@@ -37,9 +44,9 @@
     "attmann": {
       "code": "921819502",
       "name": "Seph",
-      "lastUpdate": 1790087304,
-      "lastLogin": 1790086188,
-      "guid": "35d23d8e-0456-4ec8-9840-8ac2be6ad225",
+      "lastUpdate": 1790105711,
+      "lastLogin": 1790094662,
+      "guid": "852ff976-cd55-433b-a20c-9fbf206d15d7",
       "decksPresent": [
         1,
         2,
@@ -49,16 +56,16 @@
         32
       ],
       "decks": {
-        "0": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/1/1.png",
-        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/8/1.png"
+        "0": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/8/1.png"
       },
       "deckImages": {
-        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/1/9.png",
-        "2": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/2/9.png",
-        "4": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/4/9.png",
-        "8": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/8/9.png",
-        "16": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/16/9.png",
-        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/35d23d8e-0456-4ec8-9840-8ac2be6ad225/32/9.png"
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/852ff976-cd55-433b-a20c-9fbf206d15d7/32/9.png"
       },
       "message": "ok"
     }
