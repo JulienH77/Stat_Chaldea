@@ -1,29 +1,36 @@
 {
-  "version": 3,
-  "source": "Rayshift public API / deck-gen",
+  "version": 2,
+  "source": "Rayshift public API",
   "region": "NA",
-  "updatedAt": null,
+  "updatedAt": "2026-09-22T13:54:09.649Z",
   "players": {
     "julien": {
       "code": "939739133",
-      "name": "Julien",
-      "lastUpdate": null,
-      "lastLogin": null,
+      "name": "oShaRKio",
+      "lastUpdate": 1790077355,
+      "lastLogin": 1790076228,
       "guid": "381d9bb7-fc83-49d2-862d-3990b4c1379c",
       "decksPresent": [
         1,
         2,
-        4
+        4,
+        8,
+        16,
+        32
       ],
-      "decks": {},
+      "decks": {
+        "0": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/8/1.png"
+      },
       "deckImages": {
         "1": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/1/9.png",
         "2": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/2/9.png",
         "4": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/4/9.png",
-        "8": "",
-        "16": "",
-        "32": ""
-      }
+        "8": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/939739133/381d9bb7-fc83-49d2-862d-3990b4c1379c/32/9.png"
+      },
+      "message": "ok"
     },
     "yanis": {
       "code": "",
