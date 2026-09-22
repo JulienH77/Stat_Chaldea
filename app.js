@@ -1,6 +1,6 @@
-import initialState from './data/initial-state.json?v=31' with { type: 'json' };
-import welfareData from './data/welfare-ids.json?v=31' with { type: 'json' };
-import supportData from './data/support-lists.json?v=31' with { type: 'json' };
+import initialState from './data/initial-state.json?v=32' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=32' with { type: 'json' };
+import supportData from './data/support-lists.json?v=32' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -11,7 +11,8 @@ const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
 const NA_BLOCKED_IDS=new Set([83,149,151,168,240,333,411,412,436,443,460]);
-const isBlockedRecord=r=>NA_BLOCKED_IDS.has(Number(r?.id))||NA_BLOCKED_IDS.has(Number(r?.collectionNo));
+const NA_BLOCKED_NAMES=new Set(['solomon']);
+const isBlockedRecord=r=>NA_BLOCKED_IDS.has(Number(r?.id))||NA_BLOCKED_IDS.has(Number(r?.collectionNo))||NA_BLOCKED_IDS.has(Number(r?.atlasId))||NA_BLOCKED_NAMES.has(norm(r?.name));
 const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
 const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
 const SUPPORT_GUID_FALLBACKS={julien:'381d9bb7-fc83-49d2-862d-3990b4c1379c',yanis:'',attmann:''};
@@ -28,7 +29,7 @@ state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal';
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']);
-const supportLocal={julien:{friendId:'939739133'},yanis:{friendId:''},attmann:{friendId:''}};
+const supportLocal={julien:{friendId:supportSnapshot.players?.julien?.code||'939739133'},yanis:{friendId:supportSnapshot.players?.yanis?.code||''},attmann:{friendId:supportSnapshot.players?.attmann?.code||'921819502'}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
 const XP_CARD_CLASS_VALUE={5:97200,4:32400,3:10800};
@@ -133,7 +134,7 @@ function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);retur
 async function fetchAtlasList(){
   try{
     const urls=[
-      'https://api.atlasacademy.io/export/NA/basic_servant.json?v=31',
+      'https://api.atlasacademy.io/export/NA/basic_servant.json?v=32',
       'https://api.atlasacademy.io/export/NA/basic_servant.json'
     ];
     for(const url of urls){
@@ -163,38 +164,28 @@ async function syncRosterNA(){
     fillFilters();renderAll();
     return;
   }
-  const byColl=new Map(arr.map(x=>[Number(x.collectionNo),x]).filter(([id])=>Number.isFinite(id)&&id>0));
   const keep=[];
   const pushUnique=r=>{
     const id=Number(r?.id);
     if(!id||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
     keep.push(r);
   };
-  for(const r of state.roster){
-    const id=Number(r.id);
-    if(isBlockedRecord(r))continue;
-    const a=byColl.get(id);
-    if(a){
-      const cls=normalizeClass(a.className);
-      if(cls!=='Extra'&&!FUTURE_NAMES.has(norm(a.name))){
-        pushUnique({...r,name:a.name,class:cls,rarity:atlasRarity(a),atlasId:a.id,nonCounted:isMash(a)});
-      }
-    }else if(isMash(r)){
-      pushUnique({...r,nonCounted:true,atlasId:r.atlasId||r.id});
-    }
-  }
+  // Atlas NA is authoritative for which Servants are currently released.
+  // Filter unwanted IDs/names first, then explicitly keep No.417 because the
+  // export can temporarily lag while a new NA release is propagating.
   for(const a of arr){
-    const id=Number(a.collectionNo),name=String(a.name||'');
+    const id=Number(a?.collectionNo),name=String(a?.name||'');
     if(!id||isBlockedRecord(a))continue;
     const cls=normalizeClass(a.className);
     if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;
     pushUnique({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id,nonCounted:isMash(a)});
   }
-  // Ereshkigal is explicitly retained even if Atlas's trimmed export lags.
-  keep.splice(0, keep.length, ...sanitizeRoster(keep));
-  for(const r of keep){
-    const a=byColl.get(Number(r.id));
-    if(a){r.name=a.name;r.class=normalizeClass(a.className);r.rarity=atlasRarity(a);r.atlasId=a.id}
+  const existing=state.roster.find(r=>Number(r.id)===417)||NA_FORCE_INCLUDE[0];
+  const e=arr.find(x=>Number(x?.collectionNo)===417);
+  if(e){
+    keep.push({id:417,name:e.name||existing.name,class:normalizeClass(e.className)||'Beast',rarity:atlasRarity(e)||'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:e.id||3300200,nonCounted:false});
+  }else{
+    keep.push({...existing,...NA_FORCE_INCLUDE[0]});
   }
   state.roster=sanitizeRoster(keep).sort((a,b)=>Number(a.id)-Number(b.id));
   PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
@@ -392,28 +383,28 @@ function renderSupports(){
     }
   }
   $('#supportFriendId').value=fid;
-  $('#rayshiftLink').href=fid?`https://rayshift.io/na/${String(fid).replace(/\D/g,'')}`:'https://rayshift.io/lookup';
   $('#supportMasterTabs').innerHTML=PLAYERS.map(p=>`<button class="support-tab ${p===supportPlayer?'active':''}" data-support-player="${p}">${PLAYER_LABELS[p]}</button>`).join('');
   $$('[data-support-player]').forEach(b=>b.onclick=()=>{supportPlayer=b.dataset.supportPlayer;renderSupports()});
-  $$('[data-support-mode]').forEach(b=>b.classList.toggle('active',b.dataset.supportMode===supportMode));const modeSwitch=document.querySelector('.support-mode-switch');if(modeSwitch)modeSwitch.classList.toggle('event-mode',supportMode==='event');
+  $$('[data-support-mode]').forEach(b=>b.classList.toggle('active',b.dataset.supportMode===supportMode));
+  const modeSwitch=document.querySelector('.support-mode-switch');
+  if(modeSwitch)modeSwitch.classList.toggle('event-mode',supportMode==='event');
+
   const snap=supportSnapshot.players?.[supportPlayer]||{};
   const frame=$('#rayFrameWrap');
   const fidForImage=String(snap.code||fid).replace(/\D/g,'');
   const guid=snap.guid||SUPPORT_GUID_FALLBACKS[supportPlayer]||'';
-  const normalBits=[1,2,4],eventBits=[8,16,32];
-  const bits=supportMode==='event'?eventBits:normalBits;
-  const present=new Set((snap.decksPresent?.length?(snap.decksPresent||[]):(SUPPORT_FALLBACK_PRESENT[supportPlayer]||[])).map(Number));
-  const imageUrls=bits.map((bit,i)=>({bit,src:(snap.deckImages?.[String(bit)]||deckGenUrl(fidForImage,guid,bit)),present:present.has(bit),label:`${supportMode==='event'?'Event':'Normal'} ${i+1}`}));
-  if(snap.code||fid){
-    frame.innerHTML=`<div class="support-clean"><div class="support-clean-head"><strong>${PLAYER_LABELS[supportPlayer]} · NA</strong><span>${snap.code||fid}</span></div><p>${snap.lastUpdate?`Dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')}`:'Support public Rayshift'}</p><a class="source-btn" href="https://rayshift.io/na/${String(snap.code||fid).replace(/\D/g,'')}" target="_blank" rel="noopener">Voir le profil Rayshift ↗</a></div>`;
-  } else {
-    frame.innerHTML='<div class="empty-state"><strong>Aucune Support List synchronisée</strong><span>Enregistre un Friend ID pour charger les images Rayshift.</span></div>';
-  }
-  $('#supportLists').innerHTML=imageUrls.map(item=>{
-    const ok=item.present||!!item.src;
-    return `<article class="support-list support-list-live ${item.present?'has-deck':''}"><div class="support-list-head"><div><h3>${item.label}</h3><small>${supportMode==='event'?'Support événement':'Support normal'}</small></div><span class="support-status ${ok?'live':''}">${ok?'DISPONIBLE':'VIDE'}</span></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${item.label}" loading="eager"></a>`:'<span class="support-empty-slot">Cette liste n’est pas disponible dans Rayshift.</span>'}</div></article>`;
-  }).join('');
+  const bits=supportMode==='event'?[8,16,32]:[1,2,4];
+  const imageUrls=bits.map((bit,i)=>({
+    bit,
+    src:(snap.deckImages?.[String(bit)]||deckGenUrl(fidForImage,guid,bit)),
+    label:`${supportMode==='event'?'Event':'Normal'} ${i+1}`
+  }));
+
+  frame.innerHTML=`<div class="support-clean"><span>${snap.lastUpdate?`Dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')}`:'Dernière mise à jour : —'}</span></div>`;
+
+  $('#supportLists').innerHTML=imageUrls.map(item=>`<article class="support-list support-list-live"><div class="support-list-head"><h3>${item.label}</h3></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${item.label}" loading="eager"></a>`:'<span class="support-empty-slot">Cette liste n’est pas disponible.</span>'}</div></article>`).join('');
 }
+
 
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p,targetClass=''){const inv=xpInventory(p);let random=0,effective=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);const base=n*XP_CARD_VALUE[star];random+=base;effective+=targetClass&&c===targetClass?Math.round(base*1.2):base}}return{random,classBonus:effective,effective}}
