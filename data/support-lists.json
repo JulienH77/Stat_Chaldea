@@ -42,13 +42,52 @@
       "decks": {}
     },
     "attmann": {
-      "code": "",
-      "name": "Attmann",
-      "lastUpdate": null,
-      "lastLogin": null,
-      "guid": null,
-      "decksPresent": [],
-      "decks": {}
+      "code": "921819502",
+      "name": "Seph",
+      "lastUpdate": 1790086739,
+      "lastLogin": 1790086188,
+      "guid": "c57b35bd-01fd-43d7-943d-43c42e561358",
+      "decksPresent":[
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "decks":{
+        "0": "/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/1/1.png",
+        "1": "/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/8/1.png"
+      },
+      "deckImages": {
+         "1": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/1/9.png",
+         "2": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/2/9.png",
+         "4": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/4/9.png",
+         "8": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/8/9.png",
+         "16": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/c57b35bd-01fd-43d7-943d-43c42e561358/32/9.png"
+      },
+      "message":"ok"
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
