@@ -326,3 +326,13 @@
 /* V33 hardening: sticky topbar must stay above XP class selector while scrolling. */
 .topbar{z-index:100!important}
 .xp-class-field{z-index:5!important}
+
+/* V35 — prevent Support Lists from bleeding into other views while scrolling */
+main.main{position:relative;overflow:visible;isolation:isolate}
+.view{position:relative;display:none!important;visibility:hidden;pointer-events:none;isolation:isolate}
+.view.active{display:block!important;visibility:visible;pointer-events:auto}
+.view:not(.active) > *{visibility:hidden!important;pointer-events:none!important}
+#view-supports{position:relative;z-index:0;contain:paint}
+#view-supports:not(.active){display:none!important;visibility:hidden!important;pointer-events:none!important}
+#view-supports.active{display:block!important;visibility:visible!important;pointer-events:auto!important}
+.support-hub,.support-stack{position:relative;z-index:0}
