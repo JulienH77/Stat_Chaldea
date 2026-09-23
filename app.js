@@ -401,8 +401,8 @@ function renderSupports(){
     label:`${supportMode==='event'?'Event':'Normal'} ${i+1}`
   }));
 
-  frame.innerHTML=`<div class="support-clean"><span>${snap.lastUpdate?`Rayshift · dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')`:'Rayshift · dernière mise à jour : —'}</span></div>`;
-
+  frame.innerHTML = `<div class="support-clean"><span>${snap.lastUpdate ? `Rayshift · dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')}` : 'Rayshift · dernière mise à jour : —'}</span></div>`;
+ 
   $('#supportLists').innerHTML=imageUrls.map(item=>`<article class="support-list support-list-live"><div class="support-list-head"><h3>${item.label}</h3></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${item.label}" loading="eager"></a>`:'<span class="support-empty-slot">Cette liste n’est pas disponible.</span>'}</div></article>`).join('');
 }
 
