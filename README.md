@@ -1,121 +1,662 @@
-Chaldea Command V20
+# Chaldea Command
 
-# Chaldea Command · V29
+**Chaldea Command** est une application web de suivi de comptes **Fate/Grand Order (FGO) — serveur NA**.
 
-GitHub Pages dashboard for a small FGO NA roster shared by Julien, Yanis and Attmann.
+Elle a été conçue pour permettre à plusieurs Masters de suivre leur propre collection de Servants, leur progression et leur stock d'EXP, tout en pouvant consulter les données des autres membres du groupe.
 
-## Data architecture
+Le projet est hébergé sur **GitHub Pages** et utilise **Supabase** pour les données partagées. Les informations générales des Servants proviennent d'**Atlas Academy** et les Support Lists publiques sont récupérées depuis **Rayshift**.
 
-- `data/initial-state.json` is the local seed/snapshot only.
-- Supabase `chaldea_stats` is the shared source of truth once cloud is configured.
-- Atlas Academy NA is used for the live Servant catalogue, stats and artworks. The NA API is queried separately from JP.
-- `data/welfare-ids.json` stores the explicit Welfare list because Welfare status is not safe to infer only from rarity.
+---
 
-## Supabase
+## À quoi sert le site ?
 
-Run **only** `supabase.sql` in the SQL editor. Do not upload `initial-state.json` to Supabase.
+Le but est de remplacer un suivi FGO sous forme de tableur par une interface beaucoup plus lisible et adaptée au jeu.
 
-The authenticated player can edit only their own `player_key`. Public/other users can read the roster.
+Chaque membre du groupe possède ses propres données :
 
-Put the project URL and browser-safe public key in `config.js`.
+- Servants possédés ou non ;
+- niveau ;
+- niveau de NP ;
+- niveaux des trois Skills ;
+- niveaux des Append Skills ;
+- Bond ;
+- Graals ;
+- Fou HP / ATK ;
+- servant coins ;
+- inventaire de cartes d'EXP.
 
-## First initialization
+Les autres utilisateurs peuvent consulter ces données sans pouvoir les modifier.
 
-1. Create the three Supabase Auth users.
-2. Link them to `julien`, `yanis`, and `attmann` in `chaldea_members`.
-3. Log in on the site.
-4. The editor can import the initial snapshot into Supabase.
+---
 
-## Rayshift support synchronization
+# Les différents onglets
 
-Rayshift exposes public NA friend profiles, but a browser-only GitHub Pages app cannot reliably read the HTML cross-origin. This V8 therefore does not pretend an iframe is a data API.
+## Overview
 
-`supabase/functions/rayshift-proxy/index.ts` is the server-side proxy skeleton. Deploy it as a Supabase Edge Function, then set `rayshiftProxyUrl` in `config.js`. The client can then fetch the public Rayshift HTML through your own endpoint and render the six support decks in its own UI.
+L'Overview fournit une vue d'ensemble d'un compte.
 
-## QA
+Elle présente notamment :
 
-`app.js` is checked with `node --check` before packaging.
+- le nombre de Servants possédés ;
+- le nombre de 5★, 4★ et Welfares possédés ;
+- la distribution des niveaux de Skills ;
+- la moyenne du Skill 1, du Skill 2 et du Skill 3 ;
+- le nombre de Servants au niveau 100 et 120 ;
+- le nombre de Servants Bond 10+ ;
+- la progression de collection des 4★ / 5★ ;
+- le pourcentage de Servants Gold ayant atteint NP 5.
 
+La distribution des Skills peut être visualisée selon deux populations :
 
-## V13 data reset
-Yanis and Attmann initial snapshots are rebuilt from the supplied FGOyanis/FGOattmann sheets from scratch. Only explicit NP/Skill entries are imported; old incorrect level/bond/grail/append/coin values for these two players are not retained.
+- **ALL** : tous les Servants suivis ;
+- **GOLD** : 4★, 5★ et Welfares.
 
+Les moyennes des trois Skills suivent le même filtre ALL/GOLD.
 
-## V14 friend-data reset
-Yanis and Attmann are rebuilt strictly from columns ID, servant, NP, Skill 1, Skill 2, Skill 3 in their current Excel exports. `supabase-reset-friends.sql` clears previous bad cloud rows and inserts the fresh values.
+---
 
+## Servants
 
-## V17 updates
-- Overview skill scope toggle: ALL or GOLD (4★/5★ + Welfare), and the selected scope updates skill averages.
-- Overview collection ring no longer repeats the percentage inside the ring.
-- NA roster sync now prefers Atlas Academy's static `export/NA/basic_servant.json` so low-rarity/support Servants are not lost when their NP does not deal damage.
-- Compare keeps the selected Showdown Servant across refreshes, removes possession/coins rows, adds skills + append skill blocks, and uses Julien red, Yanis blue, Attmann green in the radar.
-- Added a one-click "Enregistrer toutes mes données" action in the authenticated editor account dialog for Servant stats, XP inventory and support Friend ID.
-- No database schema changes are introduced in V17; do not rerun SQL just for this release.
+Cet onglet constitue le catalogue principal.
 
-## V25 · automatisation du snapshot cloud
+Il permet de :
 
-Le dépôt peut maintenant reconstruire automatiquement `data/initial-state.json` à partir des données Supabase et du catalogue Atlas Academy NA.
+- rechercher un Servant ;
+- filtrer par classe ;
+- filtrer par rareté ;
+- sélectionner plusieurs classes ou plusieurs raretés en même temps ;
+- masquer ou afficher les Servants non possédés ;
+- choisir l'ordre de tri ;
+- inverser le tri entre ascendant et descendant ;
+- choisir une vue en cartes ou en tableau.
 
-Le workflow `.github/workflows/sync-initial-state.yml` s'exécute chaque dimanche à 04:30 UTC et peut aussi être lancé manuellement avec **Actions → Sync cloud snapshot → Run workflow**.
+Les tris disponibles comprennent notamment :
 
-Le script `tools/sync-initial-state.mjs` :
+- ordre de sortie ;
+- Bond ;
+- NP ;
+- niveau ;
+- ATK ;
+- HP.
 
-- récupère toutes les lignes de `chaldea_stats` pour Julien, Yanis et Attmann ;
-- récupère l'inventaire XP `chaldea_xp` ;
-- actualise le catalogue Servants depuis l'export NA Atlas Academy ;
-- reconstruit le snapshot local sans recopier les anciennes valeurs personnelles absentes du cloud ;
-- commit/push `data/initial-state.json` uniquement lorsqu'il a changé.
+### Les cartes de Servants
 
-### Secrets GitHub nécessaires
+Les petites cartes affichent les informations principales du Servant :
 
-Créer dans **Settings → Secrets and variables → Actions** :
+- artwork ;
+- classe ;
+- rareté ;
+- niveau ;
+- Graals ;
+- NP ;
+- et, selon le tri sélectionné, la statistique correspondante mise en avant.
 
-- `SUPABASE_URL` = URL du projet Supabase ;
-- `SUPABASE_SECRET_KEY` = clé secrète Supabase (`sb_secret_...`).
+Un Servant non possédé est visuellement désaturé et identifié par un indicateur **NON POSSÉDÉ**.
 
-La clé secrète doit rester uniquement dans GitHub Actions : elle possède des privilèges élevés et ne doit jamais être placée dans `config.js` ni dans le code envoyé au navigateur. La clé publishable (`sb_publishable_...`) reste celle de l'application web. citeturn594621search5turn594621search2
+### Fiche détaillée
 
-Le workflow utilise uniquement `GITHUB_TOKEN` pour committer la nouvelle version du fichier, avec `contents: write`; aucun Personal Access Token GitHub n'est nécessaire.
+Un clic sur un Servant ouvre une fiche plus complète avec :
 
-### Pourquoi le snapshot peut aider
+- artworks des quatre ascensions ;
+- classe et rareté ;
+- niveau ;
+- nombre de Graals ;
+- ATK et HP actuelles ;
+- investissement Fou ;
+- niveau de NP ;
+- trois Skills ;
+- cinq Append Skills ;
+- Bond sous forme de 15 losanges ;
+- les cinq Command Cards.
 
-`initial-state.json` sert de snapshot local immédiat. Le site peut ainsi afficher immédiatement les données de base puis synchroniser Supabase en arrière-plan. Le snapshot hebdomadaire réduit aussi le risque de perdre une base de départ à jour.
+Lorsqu'un utilisateur possède les droits d'édition sur le compte affiché, les zones modifiables deviennent éditables.
 
-### Welfare
+Le Bond peut être défini directement en cliquant sur les losanges.
 
-`data/welfare-ids.json` reste une liste explicite. Je ne l'écrase pas automatiquement depuis Atlas Academy : la documentation publique Atlas décrit le catalogue et les données Servant, mais ne fournit pas dans la documentation du Servant un champ Welfare suffisamment explicite pour faire une classification fiable. Une automatisation trop agressive pourrait reproduire le problème de Servants homonymes (par exemple plusieurs variantes de BB). Le fichier doit donc être mis à jour lorsqu'un nouveau Welfare arrive.
+Une action secondaire permet également de retirer un Servant de sa collection lorsqu'il a été ajouté par erreur.
 
-### Changement de fréquence
+---
 
-Pour un snapshot mensuel, remplacer dans `.github/workflows/sync-initial-state.yml` :
+## Compare
 
-`30 4 * * 0`
+L'onglet Compare permet de comparer les comptes de **Julien**, **Yanis** et **Attmann**.
 
-par une expression cron mensuelle, par exemple le premier jour du mois à 04:30 UTC :
+La comparaison porte notamment sur :
 
-`30 4 1 * *`
+- collection 4★ / 5★ / Welfare ;
+- moyenne Skill 1 ;
+- moyenne Skill 2 ;
+- moyenne Skill 3 ;
+- pourcentage de NP 5 ;
+- Bond 10+ ;
+- niveau 120.
 
+Le profil de progression est représenté par un radar avec une couleur dédiée à chaque Master :
 
-### Configuration client / GitHub Actions
+- **Julien** : rouge ;
+- **Yanis** : bleu ;
+- **Attmann** : vert.
 
-`config.js` contient uniquement l'URL Supabase et la clé publishable destinées au navigateur. La clé secrète `SUPABASE_SECRET_KEY` n'est jamais placée dans `config.js` : elle est utilisée uniquement par le workflow GitHub Actions via les secrets du dépôt.
+### Servant Showdown
 
+Le module **Servant Showdown** permet de sélectionner un Servant et d'afficher côte à côte les données de chaque compte pour ce même personnage.
 
-## V29 · NA roster, XP and Rayshift support
+La sélection utilise une saisie assistée afin d'éviter les erreurs liées aux variantes de noms.
 
-### Catalogue NA
-The web app now prefers Atlas Academy's lightweight static NA servant export (`export/NA/basic_servant.json`) instead of a large search request. Atlas documents these static exports for indexing and maintains the data automatically after new game versions. The app reconciles the roster against that NA catalogue, excludes the configured non-display IDs, and explicitly keeps Ereshkigal (collectionNo 417 / Beast) available even if a temporary Atlas request fails.
+---
 
-### NP display
-Small Servant cards show at most `NP 5`; the detailed Servant modal keeps the full entered value, displaying e.g. `NP 5 (7)` for values above five.
+## Calcul XP
 
-### XP calculator
-The calculator includes a target Servant class. When selected, cards from the matching class contribute their class-bonus XP (120% of their base value) to the available effective XP. Inventory cells save locally immediately and synchronize to Supabase shortly after editing when the connected user has edit rights.
+Le calculateur XP sert à déterminer combien d'EXP il faut pour faire monter un Servant d'un niveau à un autre.
 
-### Rayshift Support Lists
-Rayshift documents a public endpoint `GET https://rayshift.io/api/v1/support/decks/{region}/{friendCode}`. It returns the public profile metadata, the bitmask of present decks, and image paths for the Main 1-3 and Event 1-3 decks. The app can request this endpoint directly as a best-effort live refresh and falls back to `data/support-lists.json`. A GitHub Actions workflow also refreshes the snapshot every six hours.
+On peut choisir :
 
-Only the Friend ID is used for these lookups. The player's Rayshift display name is not stored in `data/support-lists.json`.
+- le niveau actuel ;
+- le niveau souhaité ;
+- la classe du Servant à entraîner.
 
-To configure friends, each editor can enter their own NA Friend ID in **Support Lists → NA Friend ID → Enregistrer**. The ID is stored in Supabase in `chaldea_support_profiles`; the scheduled workflow then reads those IDs and refreshes the public deck images. No Rayshift API key is needed for the public `/support/decks` endpoint.
+La classe est sélectionnée via les logos des classes FGO.
+
+Le calcul prend en compte le bonus d'EXP de classe pour les cartes correspondantes.
+
+### Inventaire EXP
+
+Un tableau permet de saisir les cartes d'EXP disponibles par classe et par rareté.
+
+Les catégories principales sont :
+
+- 5★ ;
+- 4★ ;
+- 3★ ;
+- autres cartes / EXP sans bonus de classe.
+
+Les quantités saisies déclenchent immédiatement le recalcul des valeurs affichées.
+
+Les informations sont sauvegardées pour le compte sélectionné lorsque l'utilisateur dispose des droits d'édition.
+
+---
+
+## Support Lists
+
+L'onglet **Support Lists** affiche les six Support Lists publiques du compte sélectionné sur le serveur NA :
+
+### Normal
+
+1. Normal 1
+2. Normal 2
+3. Normal 3
+
+### Event
+
+1. Event 1
+2. Event 2
+3. Event 3
+
+Les listes sont affichées sous forme d'images générées par Rayshift, dans l'interface du site.
+
+La page permet de basculer entre **Normal** et **Event**.
+
+Chaque compte est identifié par son **Friend ID NA**.
+
+---
+
+# Origine des données
+
+## Données des Servants : Atlas Academy
+
+Atlas Academy fournit les données FGO utilisées par l'application pour le catalogue NA, notamment :
+
+- nom ;
+- classe ;
+- rareté ;
+- statistiques ;
+- artworks ;
+- Command Cards ;
+- autres métadonnées utiles à l'affichage.
+
+Le site travaille avec le catalogue **NA**, et non avec le catalogue JP.
+
+Le catalogue est synchronisé automatiquement afin que les nouveaux Servants NA puissent apparaître sans devoir ajouter manuellement chaque personnage dans le code du site.
+
+Des exceptions explicites existent pour certains identifiants internes qui ne doivent pas être affichés dans le catalogue du joueur.
+
+---
+
+## Welfares
+
+Les Welfares sont définis dans :
+
+```text
+/data/welfare-ids.json
+```
+
+Cette liste est volontairement explicite.
+
+Elle ne doit pas être déduite automatiquement du nom du Servant ou de sa rareté : plusieurs Servants peuvent partager le même nom tout en ayant un statut différent.
+
+Exemple : deux variantes de **BB** peuvent avoir des statuts différents. C'est pourquoi le statut Welfare est associé à l'identifiant du Servant.
+
+Lorsqu'un nouveau Welfare arrive sur NA, il faut ajouter son identifiant à ce fichier si le système automatique ne dispose pas d'une information suffisamment fiable pour le classer.
+
+---
+
+# Comptes et permissions
+
+Le site distingue trois Masters :
+
+- Julien ;
+- Yanis ;
+- Attmann.
+
+La connexion est gérée par **Supabase Auth**.
+
+Une personne connectée peut consulter les données de tous les comptes, mais elle ne peut modifier que les données du compte qui lui a été attribué.
+
+Exemple :
+
+```text
+Julien connecté
+├── consulter Julien   ✅
+├── consulter Yanis    ✅
+├── consulter Attmann  ✅
+├── modifier Julien    ✅
+├── modifier Yanis     ❌
+└── modifier Attmann   ❌
+```
+
+Le compte affiché dans le site n'est pas automatiquement remplacé par le compte connecté : cela permet de rester sur le profil d'un ami en lecture seule lors d'une consultation.
+
+---
+
+# Sauvegarde des données
+
+## Sauvegarde d'un Servant
+
+Lorsqu'un éditeur modifie une fiche Servant et clique sur **Enregistrer**, la modification doit être envoyée directement à Supabase.
+
+Les statistiques d'un Servant sont identifiées par le couple :
+
+```text
+player_key + servant_id
+```
+
+La sauvegarde utilise donc un **upsert** : enregistrer plusieurs fois le même Servant ne crée pas une nouvelle ligne à chaque fois, mais met à jour la ligne existante.
+
+---
+
+## Enregistrement global
+
+Le bouton **Enregistrer toutes mes données** est une solution secondaire permettant de renvoyer en une fois les données du compte affiché vers Supabase.
+
+Il n'est pas nécessaire pour une modification normale d'un Servant ou d'une case de l'inventaire XP : les modifications courantes sont sauvegardées individuellement.
+
+---
+
+# Supabase
+
+Supabase sert de base de données distante pour les données personnalisées.
+
+Les principales tables utilisées sont notamment :
+
+```text
+chaldea_members
+chaldea_stats
+chaldea_xp
+chaldea_support_profiles
+```
+
+### `chaldea_members`
+
+Associe un utilisateur Supabase Auth à son compte du site :
+
+```text
+julien
+yanis
+attmann
+```
+
+et définit ses droits d'édition.
+
+### `chaldea_stats`
+
+Contient les statistiques personnalisées des Servants par joueur.
+
+### `chaldea_xp`
+
+Contient l'inventaire de cartes d'EXP par joueur.
+
+### `chaldea_support_profiles`
+
+Contient les informations nécessaires pour relier un compte du site à son Friend ID Rayshift.
+
+---
+
+# Snapshot local
+
+Le fichier :
+
+```text
+/data/initial-state.json
+```
+
+est un **snapshot local de secours**.
+
+Il permet au site d'avoir une base de données initiale même si Supabase n'est pas disponible immédiatement.
+
+Lorsque la version cloud est configurée, Supabase constitue la source principale pour les données personnalisées.
+
+Le snapshot peut être régénéré automatiquement par GitHub Actions à partir des données cloud.
+
+---
+
+# Synchronisation automatique
+
+Le dépôt contient deux workflows GitHub Actions principaux.
+
+## `Sync cloud snapshot`
+
+```text
+.github/workflows/sync-initial-state.yml
+```
+
+Son rôle est de reconstruire :
+
+```text
+/data/initial-state.json
+```
+
+à partir des données Supabase et du catalogue NA.
+
+Les secrets GitHub nécessaires sont :
+
+```text
+SUPABASE_URL
+SUPABASE_SECRET_KEY
+```
+
+La clé secrète est utilisée uniquement par GitHub Actions et ne doit jamais être placée dans `config.js` ni dans le code du navigateur.
+
+Le workflow peut être lancé automatiquement selon son calendrier ou manuellement depuis l'onglet **Actions** du dépôt.
+
+---
+
+## `Sync Rayshift support lists`
+
+```text
+.github/workflows/sync-support-lists.yml
+```
+
+Ce workflow récupère les Friend IDs des comptes, interroge les données publiques de Rayshift et met à jour :
+
+```text
+/data/support-lists.json
+```
+
+Les images des six listes sont ensuite construites à partir des URLs `deck-gen` de Rayshift.
+
+Aucune clé secrète Rayshift n'est nécessaire pour l'accès aux informations publiques utilisées par le projet.
+
+---
+
+# Support Lists et Rayshift
+
+Les images affichées dans l'application suivent le format Rayshift :
+
+```text
+https://rayshift.io/static/images/deck-gen/{region}/{friendId}/{guid}/{decksToStack}/{flags}.png
+```
+
+Pour le serveur NA :
+
+```text
+region = na
+```
+
+Les trois listes normales correspondent aux masques :
+
+```text
+1
+2
+4
+```
+
+et les trois listes événementielles :
+
+```text
+8
+16
+32
+```
+
+Le projet stocke notamment le GUID et les URLs des images dans :
+
+```text
+/data/support-lists.json
+```
+
+---
+
+# Images locales
+
+Les petites icônes de l'interface ne dépendent pas de Fandom.
+
+Elles sont stockées dans le dossier :
+
+```text
+/IMG
+```
+
+avec notamment :
+
+```text
+IMG/saber.webp
+IMG/archer.webp
+IMG/lancer.webp
+IMG/rider.webp
+IMG/caster.webp
+IMG/assassin.webp
+IMG/berserker.webp
+IMG/ruler.webp
+IMG/avenger.webp
+IMG/alter_ego.webp
+IMG/moon_cancer.webp
+IMG/foreigner.webp
+IMG/pretender.webp
+IMG/shielder.webp
+IMG/beast.webp
+IMG/graal.webp
+IMG/np.webp
+IMG/quick.webp
+IMG/arts.webp
+IMG/buster.webp
+```
+
+Cela évite que l'affichage des classes, du Graal, du NP ou des Command Cards dépende du chargement d'une image externe.
+
+Les artworks des Servants peuvent, eux, provenir d'Atlas Academy.
+
+---
+
+# Structure principale du dépôt
+
+```text
+Stat_Chaldea/
+│
+├── index.html
+├── app.js
+├── styles.css
+├── config.js
+├── README.md
+│
+├── IMG/
+│   ├── saber.webp
+│   ├── archer.webp
+│   ├── ...
+│   ├── graal.webp
+│   ├── np.webp
+│   ├── quick.webp
+│   ├── arts.webp
+│   └── buster.webp
+│
+├── data/
+│   ├── initial-state.json
+│   ├── welfare-ids.json
+│   └── support-lists.json
+│
+├── tools/
+│   ├── sync-initial-state.mjs
+│   └── sync-support-lists.mjs
+│
+├── .github/
+│   └── workflows/
+│       ├── sync-initial-state.yml
+│       └── sync-support-lists.yml
+│
+└── supabase/
+    └── functions/
+        └── rayshift-proxy/
+            └── index.ts
+```
+
+---
+
+# Mise en ligne
+
+Le site est une application statique et peut être publié avec **GitHub Pages**.
+
+Une configuration typique est :
+
+```text
+GitHub Pages
+    ↓
+index.html
+app.js
+styles.css
+    ↓
+Supabase
+    ↓
+données personnalisées
+```
+
+Aucun serveur web classique n'est nécessaire pour l'interface elle-même.
+
+---
+
+# Configuration de Supabase
+
+Le navigateur utilise uniquement :
+
+- l'URL du projet Supabase ;
+- la clé **publishable**.
+
+Exemple :
+
+```js
+window.CHALDEA_CONFIG = {
+  supabaseUrl: 'https://...supabase.co',
+  supabasePublishableKey: 'sb_publishable_...',
+  workspaceId: 'fgo-chaldea',
+  rayshiftProxyUrl: '',
+  enableRealtime: false
+};
+```
+
+La clé secrète Supabase ne doit pas être placée ici.
+
+Elle est réservée aux scripts GitHub Actions ou aux fonctions serveur.
+
+---
+
+# Ajouter un nouveau Master
+
+Le projet est actuellement prévu pour trois comptes, mais son architecture repose sur une clé de joueur (`player_key`) et peut évoluer.
+
+Pour ajouter un nouvel utilisateur, il faut notamment :
+
+1. créer son compte dans Supabase Auth ;
+2. l'associer à une ligne de `chaldea_members` ;
+3. lui attribuer un `player_key` ;
+4. éventuellement lui associer un Friend ID Rayshift ;
+5. alimenter son snapshot initial si nécessaire.
+
+---
+
+# Ajouter un nouveau Servant
+
+Il n'est normalement pas nécessaire de modifier manuellement le code pour chaque nouveau Servant NA.
+
+Le catalogue du site se synchronise avec Atlas Academy NA.
+
+Le processus attendu est :
+
+```text
+nouveau Servant disponible sur NA
+        ↓
+Atlas Academy met à jour son catalogue
+        ↓
+synchronisation du site
+        ↓
+le Servant apparaît dans le catalogue
+        ↓
+il est initialement non possédé pour chaque Master
+```
+
+Les exclusions spécifiques sont maintenues séparément dans la logique du projet afin d'éviter l'affichage de personnages techniques ou non destinés au roster jouable.
+
+---
+
+# Tests et vérifications
+
+Avant de publier une version, les fichiers JavaScript peuvent être vérifiés avec :
+
+```bash
+node --check app.js
+node --check tools/sync-initial-state.mjs
+node --check tools/sync-support-lists.mjs
+```
+
+Les fichiers JSON peuvent être validés avec un parseur JSON standard.
+
+---
+
+# Limites actuelles
+
+Certaines informations ne peuvent pas être déduites de manière parfaitement fiable à partir d'Atlas Academy seul.
+
+Le principal exemple est le statut **Welfare**. Il est donc maintenu avec une liste explicite d'identifiants.
+
+Les Support Lists dépendent également de la disponibilité des données publiques fournies par Rayshift.
+
+Le site utilise principalement une logique de snapshot pour garantir qu'une ouverture de page reste possible même lorsqu'un service externe est momentanément indisponible.
+
+---
+
+# En résumé
+
+**Chaldea Command** est donc un tableau de bord FGO NA partagé :
+
+```text
+                  ATLAS ACADEMY
+                  catalogue NA
+                       │
+                       ▼
+                 ┌─────────────┐
+                 │   GitHub    │
+                 │ Pages + UI  │
+                 └──────┬──────┘
+                        │
+           ┌────────────┴────────────┐
+           ▼                         ▼
+      SUPABASE                    RAYSHIFT
+      comptes + stats             supports publics
+           │                         │
+           └────────────┬────────────┘
+                        ▼
+                 CHALDEA COMMAND
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+       Julien         Yanis        Attmann
+```
+
+L'objectif est de conserver une **saisie simple des statistiques** tout en offrant une **interface complète de consultation, de comparaison et de suivi de progression** adaptée à FGO.
