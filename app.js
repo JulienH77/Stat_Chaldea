@@ -1,6 +1,6 @@
-import initialState from './data/initial-state.json?v=32' with { type: 'json' };
-import welfareData from './data/welfare-ids.json?v=32' with { type: 'json' };
-import supportData from './data/support-lists.json?v=32' with { type: 'json' };
+import initialState from './data/initial-state.json?v=34' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=34' with { type: 'json' };
+import supportData from './data/support-lists.json?v=34' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -55,7 +55,7 @@ function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has
 function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
 function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
 function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
-function displayLevel(p,r,s){const n=Number(s.level);return Number.isFinite(n)&&n>0?n:(p==='yanis'||p==='attmann'?defaultMaxLevel(r):'—')}
+function displayLevel(p,r,s){const n=Number(s.level);if(Number.isFinite(n)&&n>0)return n;return (p==='yanis'||p==='attmann')&&isOwned(p,r)?defaultMaxLevel(r):'—'}
 function ensureStats(p,id){state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].stats??={};state.players[p].stats[String(id)]??={level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]};return state.players[p].stats[String(id)]}
 function isOwned(p,r){if(!isCounted(r))return true;const s=stats(p,r.id);return ['level','np','bond','grail','fouHp','fouAtk','servantCoins'].some(k=>s[k]!=null)||[...(s.skills||[]),...(s.appendSkills||[])].some(v=>v!=null)}
 function validSkill(v){return Number.isFinite(v)&&v>=1&&v<=10}
@@ -401,7 +401,7 @@ function renderSupports(){
     label:`${supportMode==='event'?'Event':'Normal'} ${i+1}`
   }));
 
-  frame.innerHTML=`<div class="support-clean"><span>${snap.lastUpdate?`Dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')}`:'Dernière mise à jour : —'}</span></div>`;
+  frame.innerHTML=`<div class="support-clean"><span>${snap.lastUpdate?`Rayshift · dernière mise à jour : ${new Date(Number(snap.lastUpdate)*1000).toLocaleString('fr-FR')`:'Rayshift · dernière mise à jour : —'}</span></div>`;
 
   $('#supportLists').innerHTML=imageUrls.map(item=>`<article class="support-list support-list-live"><div class="support-list-head"><h3>${item.label}</h3></div><div class="support-deck-preview">${item.src?`<a href="${item.src}" target="_blank" rel="noopener"><img src="${item.src}" alt="${item.label}" loading="eager"></a>`:'<span class="support-empty-slot">Cette liste n’est pas disponible.</span>'}</div></article>`).join('');
 }
