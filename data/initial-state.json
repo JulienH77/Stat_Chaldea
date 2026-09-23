@@ -3556,7 +3556,7 @@
           "servantCoins": 0
         },
         "174": {
-          "level": 1,
+          "level": 60,
           "bond": 7,
           "grail": 0,
           "fouHp": 0,
@@ -23978,16 +23978,16 @@
           "servantCoins": null
         },
         "308": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -23999,37 +23999,37 @@
           "servantCoins": null
         },
         "309": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 120,
+          "bond": 11,
+          "grail": 15,
+          "fouHp": 1000,
+          "fouAtk": 1000,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
+            10,
             null,
             null,
-            null,
-            null
+            10
           ],
           "servantCoins": null
         },
         "310": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -24041,20 +24041,20 @@
           "servantCoins": null
         },
         "311": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            1,
             null,
             null,
             null
@@ -24083,16 +24083,16 @@
           "servantCoins": null
         },
         "313": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 4,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24104,41 +24104,41 @@
           "servantCoins": null
         },
         "314": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 11,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
             null,
             null,
             null,
-            null
+            10
           ],
           "servantCoins": null
         },
         "315": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 11,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            4,
+            10,
+            4
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -24146,20 +24146,20 @@
           "servantCoins": null
         },
         "316": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 10,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -24167,20 +24167,20 @@
           "servantCoins": null
         },
         "317": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 10,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -24209,16 +24209,16 @@
           "servantCoins": null
         },
         "319": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24230,16 +24230,16 @@
           "servantCoins": null
         },
         "320": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 4,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24272,16 +24272,16 @@
           "servantCoins": null
         },
         "322": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24356,16 +24356,16 @@
           "servantCoins": null
         },
         "326": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24461,16 +24461,16 @@
           "servantCoins": null
         },
         "331": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            1,
+            10
           ],
           "appendSkills": [
             null,
@@ -24482,16 +24482,16 @@
           "servantCoins": null
         },
         "332": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 3,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24503,16 +24503,16 @@
           "servantCoins": null
         },
         "334": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            4,
+            4,
+            1
           ],
           "appendSkills": [
             null,
@@ -24524,16 +24524,16 @@
           "servantCoins": null
         },
         "335": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24545,37 +24545,37 @@
           "servantCoins": null
         },
         "336": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 120,
+          "bond": 12,
+          "grail": 0,
+          "fouHp": 1000,
+          "fouAtk": 1000,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
+            10,
+            10,
             null,
-            null,
-            null,
-            null,
-            null
+            10,
+            10
           ],
           "servantCoins": null
         },
         "337": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -24650,16 +24650,16 @@
           "servantCoins": null
         },
         "341": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 40,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24797,16 +24797,16 @@
           "servantCoins": null
         },
         "348": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 60,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24818,16 +24818,16 @@
           "servantCoins": null
         },
         "349": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -24839,16 +24839,16 @@
           "servantCoins": null
         },
         "350": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24860,37 +24860,37 @@
           "servantCoins": null
         },
         "351": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 6,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 3,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
             null,
             null,
             null,
-            null
+            10
           ],
           "servantCoins": null
         },
         "352": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            9,
+            9,
+            10
           ],
           "appendSkills": [
             null,
@@ -24902,20 +24902,20 @@
           "servantCoins": null
         },
         "353": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 6,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -24923,16 +24923,16 @@
           "servantCoins": null
         },
         "354": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -24986,23 +24986,23 @@
           "servantCoins": null
         },
         "357": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 12,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
             null,
             null,
             null,
-            null
+            10
           ],
           "servantCoins": null
         },
@@ -25091,20 +25091,20 @@
           "servantCoins": null
         },
         "362": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 7,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -25112,16 +25112,16 @@
           "servantCoins": null
         },
         "363": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 60,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25238,20 +25238,20 @@
           "servantCoins": null
         },
         "369": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -25301,16 +25301,16 @@
           "servantCoins": null
         },
         "372": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -25448,16 +25448,16 @@
           "servantCoins": null
         },
         "379": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25574,41 +25574,41 @@
           "servantCoins": null
         },
         "385": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 120,
+          "bond": 10,
+          "grail": 0,
+          "fouHp": 1000,
+          "fouAtk": 1000,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
+            10,
             null,
             null,
-            null,
-            null
+            10
           ],
           "servantCoins": null
         },
         "386": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 6,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
-            null,
+            10,
             null,
             null,
             null
@@ -25616,16 +25616,16 @@
           "servantCoins": null
         },
         "387": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25637,16 +25637,16 @@
           "servantCoins": null
         },
         "388": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 60,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            5,
+            5,
+            5
           ],
           "appendSkills": [
             null,
@@ -25658,16 +25658,16 @@
           "servantCoins": null
         },
         "389": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25784,16 +25784,16 @@
           "servantCoins": null
         },
         "395": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 60,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25805,16 +25805,16 @@
           "servantCoins": null
         },
         "396": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 60,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25868,16 +25868,16 @@
           "servantCoins": null
         },
         "399": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25889,16 +25889,16 @@
           "servantCoins": null
         },
         "400": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -25910,16 +25910,16 @@
           "servantCoins": null
         },
         "401": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -25994,16 +25994,16 @@
           "servantCoins": null
         },
         "405": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 5,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -26099,16 +26099,16 @@
           "servantCoins": null
         },
         "410": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -26120,16 +26120,16 @@
           "servantCoins": null
         },
         "413": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -26162,16 +26162,16 @@
           "servantCoins": null
         },
         "415": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -26203,17 +26203,38 @@
           ],
           "servantCoins": null
         },
-        "418": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+        "417": {
+          "level": 90,
+          "bond": 6,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
+            10,
+            10,
+            10
+          ],
+          "appendSkills": [
             null,
             null,
-            null
+            null,
+            null,
+            10
+          ],
+          "servantCoins": null
+        },
+        "418": {
+          "level": 90,
+          "bond": 6,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
+          "skills": [
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -26246,16 +26267,16 @@
           "servantCoins": null
         },
         "420": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -26288,16 +26309,16 @@
           "servantCoins": null
         },
         "422": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 80,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            10,
+            10,
+            10
           ],
           "appendSkills": [
             null,
@@ -26309,16 +26330,16 @@
           "servantCoins": null
         },
         "423": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 70,
+          "bond": 5,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 2,
           "skills": [
-            null,
-            null,
-            null
+            1,
+            1,
+            1
           ],
           "appendSkills": [
             null,
@@ -31085,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-23T08:32:13.794Z"
+    "cloudSnapshotAt": "2026-09-23T18:06:15.486Z"
   }
 }
