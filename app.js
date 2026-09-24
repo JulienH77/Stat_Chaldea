@@ -1,6 +1,6 @@
-import initialState from './data/initial-state.json?v=103' with { type: 'json' };
-import welfareData from './data/welfare-ids.json?v=103' with { type: 'json' };
-import supportData from './data/support-lists.json?v=103' with { type: 'json' };
+import initialState from './data/initial-state.json?v=101' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=101' with { type: 'json' };
+import supportData from './data/support-lists.json?v=101' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -26,9 +26,15 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=sanitizeRoster(state.roster);
-let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal';
-let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
-const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNPTypes=new Set();
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
+let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
+const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
+const NP_EFFECT_ORDER=['Support','ST','AOE'];
+const NP_EFFECT_LABELS={Support:'Support',ST:'ST',AOE:'AOE'};
+const NP_FILTERS=[['Q:Support','Support'],['Q:ST','ST'],['Q:AOE','AOE'],['A:Support','Support'],['A:ST','ST'],['A:AOE','AOE'],['B:Support','Support'],['B:ST','ST'],['B:AOE','AOE']];
+const npTypeCache=new Map();
+let npTypeIndexPromise=null;
+const npOverlayTimers=new Map();
 const supportLocal={julien:{friendId:supportSnapshot.players?.julien?.code||'939739133'},yanis:{friendId:supportSnapshot.players?.yanis?.code||''},attmann:{friendId:supportSnapshot.players?.attmann?.code||'921819502'}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
@@ -48,18 +54,6 @@ function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s===
 function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
 function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
 function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
-function npTypeImg(t){const f=IMG[t];return f?`<img class="np-type-icon" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
-function normalizeNPCardType(v){const x=String(v??'').trim().toUpperCase();if(['A','ARTS','ART'].includes(x)||x==='1')return'A';if(['B','BUSTER'].includes(x)||x==='2')return'B';if(['Q','QUICK'].includes(x)||x==='3')return'Q';return null}
-const npTypeCache=new Map();const npTypePromises=new Map();
-function firstArrayItem(v){if(Array.isArray(v))return v[0]||null;if(v&&typeof v==='object')return Object.values(v)[0]||null;return null}
-function extractNPCardType(d){
- const np=firstArrayItem(d?.noblePhantasms||d?.noblePhantasm);
- const candidates=[np?.card,np?.cardType,np?.cardTypeName,d?.np?.card,d?.np?.cardType,d?.noblePhantasm?.cardType,d?.noblePhantasm?.cardTypeName];
- for(const v of candidates){const t=normalizeNPCardType(v);if(t)return t}
- return null
-}
-async function npCardTypeForServant(r,d=null){const key=Number(r?.atlasId||r?.id);if(!key)return null;if(npTypeCache.has(key))return npTypeCache.get(key);if(npTypePromises.has(key))return npTypePromises.get(key);const promise=(async()=>{const detail=d||await atlasDetail(r);let t=extractNPCardType(detail);if(!t){const np=firstArrayItem(detail?.noblePhantasms||detail?.noblePhantasm);const npId=Number(np?.id||0);if(npId){try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/NP/${npId}`,{cache:'force-cache'});if(res.ok){const nd=await res.json();t=normalizeNPCardType(nd?.card||nd?.cardType||nd?.cardTypeName)}}catch{}}}if(t)npTypeCache.set(key,t);return t||null})();npTypePromises.set(key,promise);try{return await promise}finally{npTypePromises.delete(key)}}
-async function ensureNPTypes(rows){let i=0;const workers=Array.from({length:8},async()=>{while(i<rows.length){const r=rows[i++];if(!r)continue;await npCardTypeForServant(r)}});await Promise.all(workers)}
 function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
@@ -95,7 +89,7 @@ function isApiAuthError(error){return !!error&&(String(error.code)==='401'||Stri
 function currentCanEdit(){return !!currentAuth?.canEdit&&currentAuth.playerKey===currentPlayer}
 function renderMasterSwitch(){
  $('#masterSwitch').innerHTML=PLAYERS.map(p=>`<button class="master-tab ${p===currentPlayer?'active':''}" data-player="${p}">${state.players[p]?.displayName||PLAYER_LABELS[p]}</button>`).join('');
- $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll();refreshPublicStats({force:true})});
+ $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll()});
  $('#heroMaster').textContent=state.players[currentPlayer]?.displayName||PLAYER_LABELS[currentPlayer];
  $('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion';
 }
@@ -125,25 +119,62 @@ function fillFilters(){
  const classes=[...new Set(state.roster.filter(isVisible).map(r=>classKey(r.class)).filter(Boolean))].sort((a,b)=>CLASS_ORDER.indexOf(a)-CLASS_ORDER.indexOf(b));
  $('#classPop').innerHTML=classes.map(c=>`<label class="check-item"><input type="checkbox" data-class="${c}" ${selectedClasses.has(c)?'checked':''}>${classImg(c)}<span>${c}</span></label>`).join('');
  const rs=[['5','5★'],['4','4★'],['welfare','Welfare'],['3','3★'],['2','2★'],['1','1★']];$('#rarityPop').innerHTML=rs.map(([v,l])=>`<label class="check-item"><input type="checkbox" data-rarity="${v}" ${selectedRarities.has(v)?'checked':''}><span>${l}</span></label>`).join('');
- const npTypes=[['Q','Quick'],['A','Arts'],['B','Buster']];$('#npPop').innerHTML=npTypes.map(([v,l])=>`<label class="check-item np-filter-item"><input type="checkbox" data-nptype="${v}" ${selectedNPTypes.has(v)?'checked':''}>${npTypeImg(v)}<span>${l}</span></label>`).join('');
+ $('#npPop').innerHTML=NP_FILTERS.map(([v,l])=>{const [c,t]=v.split(':');return `<label class="check-item np-filter-item"><input type="checkbox" data-nptype="${v}" ${selectedNpTypes.has(v)?'checked':''}><span class="np-filter-swatch">${cardImg(c)}</span><span>${l}</span></label>`}).join('');
  $$('#classPop input').forEach(i=>i.onchange=()=>{i.checked?selectedClasses.add(i.dataset.class):selectedClasses.delete(i.dataset.class);updateFilterLabels();renderRoster()});
  $$('#rarityPop input').forEach(i=>i.onchange=()=>{i.checked?selectedRarities.add(i.dataset.rarity):selectedRarities.delete(i.dataset.rarity);updateFilterLabels();renderRoster()});
- $$('#npPop input').forEach(i=>i.onchange=async()=>{i.checked?selectedNPTypes.add(i.dataset.nptype):selectedNPTypes.delete(i.dataset.nptype);updateFilterLabels();if(selectedNPTypes.size){toast('Chargement des types de NP…');const rows=state.roster.filter(isVisible);await ensureNPTypes(rows)}renderRoster()});
+ $$('#npPop input').forEach(i=>i.onchange=async()=>{i.checked?selectedNpTypes.add(i.dataset.nptype):selectedNpTypes.delete(i.dataset.nptype);if(selectedNpTypes.size)await ensureNpTypeIndex();updateFilterLabels();renderRoster()});
  updateFilterLabels();
 }
-function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';const np=$('#npFilterCount');if(np)np.textContent=selectedNPTypes.size?`(${selectedNPTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent=hideMissing?'Afficher les non possédés':'Masquer les non possédés'}}
+function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';$('#npFilterCount').textContent=selectedNpTypes.size?`(${selectedNpTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent='Non possédé';b.setAttribute('aria-pressed',hideMissing?'true':'false');b.title=hideMissing?'Non possédé : masqués':'Non possédé : affichés'}const n=$('#toggleNpOverlay');if(n){n.classList.toggle('active',showNpOverlay);n.textContent='NP card'}}
 function atlasCacheValue(r,kind){const d=atlasById.get(Number(r.atlasId||r.id));if(d){const s=stats(currentPlayer,r.id);if(s.level==null)return 0;const cs=currentStats(d,r,s);const v=kind==='atk'?cs.atk:cs.hp;if(Number.isFinite(Number(v)))return Number(v)}return 0}
 function sortRows(rows){const mode=$('#sortFilter').value,sg=sortDir==='asc'?1:-1;rows.sort((a,b)=>{let x,y;if(mode==='bond'){x=Number(a.s.bond)||-1;y=Number(b.s.bond)||-1}else if(mode==='np'){x=Number(a.s.np)||-1;y=Number(b.s.np)||-1}else if(mode==='level'){x=Number.isFinite(Number(a.s.level))?Number(a.s.level):defaultMaxLevel(a.r);y=Number.isFinite(Number(b.s.level))?Number(b.s.level):defaultMaxLevel(b.r)}else if(mode==='atk'||mode==='hp'){x=atlasCacheValue(a.r,mode)??-1;y=atlasCacheValue(b.r,mode)??-1}else{x=Number(a.r.releaseNo??a.r.id);y=Number(b.r.releaseNo??b.r.id)}return x===y?String(a.r.name).localeCompare(String(b.r.name))*sg:(x-y)*sg})}
 function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np'){const n=num(s.np);return `<div class="sort-focus">NP ${n??'—'}</div>`;}if(mode==='level')return `<div class="sort-focus">Lv ${displayLevel(currentPlayer,r,s)}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${fmtNum(atlasCacheValue(r,'atk'))}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${fmtNum(atlasCacheValue(r,'hp'))}</div>`;return''}
 function renderRoster(){
- const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!hideMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))&&(!selectedNPTypes.size||selectedNPTypes.has(npTypeCache.get(Number(o.r.atlasId||o.r.id))))});
- sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=hideMissing?`${ownedTotal} possédés affichés`:`${ownedTotal} possédés · ${totalVisible-ownedTotal} manquants`;$('#rosterCards').classList.toggle('hidden',rosterMode!=='cards');$('#rosterTable').classList.toggle('hidden',rosterMode!=='table');
- if(rosterMode==='cards'){
-   $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);const d=atlasById.get(Number(r.atlasId||r.id));return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div><span class="np-type-overlay" data-np-type-for="${r.id}"></span></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');loadCardImages(rows,token);
- }else{$('#rosterTable').innerHTML=`<table class="table"><thead><tr><th>Servant</th><th>Classe</th><th>Rareté</th><th>Lv</th><th>NP</th><th>S1</th><th>S2</th><th>S3</th><th>Bond</th><th>Coins</th></tr></thead><tbody>${rows.map(({r,s})=>`<tr data-servant-id="${r.id}" class="${isOwned(currentPlayer,r)?'':'missing-row'}"><td><b>${r.name}</b></td><td>${classImg(r.class)}</td><td>${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</td><td>${displayLevel(currentPlayer,r,s)}</td><td>${s.np??'—'}</td><td>${s.skills?.[0]??'—'}</td><td>${s.skills?.[1]??'—'}</td><td>${s.skills?.[2]??'—'}</td><td>${s.bond??'—'}</td><td>${coinEstimate(r,s)?.value??'—'}</td></tr>`).join('')}</tbody></table>`}
- $$(`.servant-card,.table tr[data-servant-id]`).forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
+ const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!hideMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))&&matchesNpFilters(o.r)});
+ sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=hideMissing?`${ownedTotal} possédés affichés`:`${ownedTotal} possédés · ${totalVisible-ownedTotal} manquants`;
+ $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');
+ loadCardImages(rows,token);
+ $$('.servant-card').forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
 }
-async function loadCardImages(rows,token){let i=0;const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));const workers=Array.from({length:6},async()=>{while(i<rows.length){const row=rows[i++];if(token!==renderToken)return;const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);if(!holder)continue;const d=await atlasDetail(row.r);const npType=await npCardTypeForServant(row.r,d);const url=imageList(d)[0]||guessImage(row.r.atlasId);if(url){const img=new Image();img.decoding='async';img.onload=()=>{if(token!==renderToken)return;holder.innerHTML='';holder.appendChild(img);if(npType){const overlay=document.createElement('span');overlay.className='np-type-overlay';overlay.setAttribute('data-np-type-for',row.r.id);overlay.innerHTML=npTypeImg(npType);holder.appendChild(overlay)}const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');const ni=npIcon();if(chip&&ni)chip.innerHTML=ni};img.onerror=()=>{holder.innerHTML=`<div class="image-fallback">ART<br><small>indisponible</small></div>${npType?`<span class="np-type-overlay" data-np-type-for="${row.r.id}">${npTypeImg(npType)}</span>`:''}`};img.src=url}else holder.innerHTML=`<div class="image-fallback">ART<br><small>indisponible</small></div>${npType?`<span class="np-type-overlay" data-np-type-for="${row.r.id}">${npTypeImg(npType)}</span>`:''}`}});await Promise.all(workers);const mode=$('#sortFilter')?.value;if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster()}
+async function loadCardImages(rows,token){
+  clearNpOverlayTimers();
+  let i=0;
+  const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));
+  const workers=Array.from({length:6},async()=>{
+    while(i<rows.length){
+      const row=rows[i++];
+      if(token!==renderToken)return;
+      const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);
+      if(!holder)continue;
+      const d=await atlasDetail(row.r);
+      const url=imageList(d)[0]||guessImage(row.r.atlasId);
+      if(showNpOverlay){
+        const profiles=await npProfilesForServant(row.r,d);
+        const cards=npCardsFromProfiles(profiles);
+        if(token===renderToken)setNpOverlayCards(holder,cards.length?cards:(npCardCode(row.r,d)?[npCardCode(row.r,d)]:[]));
+      }
+      if(url){
+        const img=new Image();
+        img.decoding='async';
+        img.onload=()=>{
+          if(token!==renderToken)return;
+          const overlay=holder.querySelector('.np-type-overlay');
+          holder.innerHTML='';
+          holder.appendChild(img);
+          if(overlay)holder.appendChild(overlay);
+          const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');
+          const ni=npIcon();
+          if(chip&&ni)chip.innerHTML=ni;
+        };
+        img.onerror=()=>holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';
+        img.src=url;
+      }else holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';
+    }
+  });
+  await Promise.all(workers);
+  const mode=$('#sortFilter')?.value;
+  if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster();
+}
 function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
 async function fetchAtlasList(){
   try{
@@ -159,7 +190,7 @@ async function fetchAtlasList(){
         const candidates=[raw,raw?.Entries,raw?.entries,raw?.data];
         for(const candidate of candidates){
           const arr=Array.isArray(candidate)?candidate:(candidate&&typeof candidate==='object'?Object.values(candidate):[]);
-          const useful=arr.filter(x=>x&&typeof x==='object'&&Number(x.collectionNo));
+          const useful=arr.filter(x=>x&&typeof x==='object'&&Number(x.id));
           if(useful.length)return useful;
         }
       }catch(e){/* try next endpoint */}
@@ -169,21 +200,12 @@ async function fetchAtlasList(){
 }
 
 
-function normalizeAtlasServant(a){
-  const collectionNo=Number(a?.collectionNo);
-  const atlasId=Number(a?.id||a?.atlasId||collectionNo);
-  if(!collectionNo||!atlasId)return null;
-  const name=String(a?.name||'');
-  const cls=normalizeClass(a?.className||a?.class);
-  return {id:collectionNo,name,class:cls,rarity:atlasRarity(a),attribute:a?.attribute||'',cardType:a?.cardType||'',atlasId,nonCounted:isMash({id:collectionNo,name})};
-}
-
 async function syncRosterNA(){
   const arr=await fetchAtlasList();
   if(!arr.length){
     state.roster=sanitizeRoster(state.roster);
     PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
-    $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+    $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isVisible).length} Servants`;
     fillFilters();renderAll();
     return;
   }
@@ -193,27 +215,37 @@ async function syncRosterNA(){
     if(!id||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
     keep.push(r);
   };
-  // Atlas NA is authoritative for which Servants are currently released.
-  // Filter unwanted IDs/names first, then explicitly keep No.417 because the
-  // export can temporarily lag while a new NA release is propagating.
+  const primaryNames=new Set(arr.filter(a=>Number(a?.collectionNo)>0).map(a=>norm(a?.name)).filter(Boolean));
+  atlasVariantsByName.clear();
   for(const a of arr){
-    const normalized=normalizeAtlasServant(a);
-    if(!normalized||isBlockedRecord({...a,...normalized})||normalized.class==='Extra'||FUTURE_NAMES.has(norm(normalized.name)))continue;
-    pushUnique(normalized);
+    const id=Number(a?.id),collectionNo=Number(a?.collectionNo),name=String(a?.name||'');
+    if(!id||isBlockedRecord(a)||FUTURE_NAMES.has(norm(name)))continue;
+    if(collectionNo===0){
+      const key=norm(name);
+      if(key&&primaryNames.has(key)){
+        const list=atlasVariantsByName.get(key)||[];
+        if(!list.some(v=>Number(v.id)===id))list.push({id,name,collectionNo:0});
+        atlasVariantsByName.set(key,list);
+      }
+      continue;
+    }
+    const cls=normalizeClass(a.className);
+    if(cls==='Extra')continue;
+    pushUnique({id:collectionNo,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id,nonCounted:isMash(a)});
   }
   const existing=state.roster.find(r=>Number(r.id)===417)||NA_FORCE_INCLUDE[0];
   const e=arr.find(x=>Number(x?.collectionNo)===417);
   if(e){
-    keep.push({id:417,name:e.name||existing.name,class:'Beast',rarity:'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:Number(e.id||existing.atlasId||3300200),nonCounted:false});
+    keep.push({id:417,name:e.name||existing.name,class:'Beast',rarity:'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:e.id||3300200,nonCounted:false});
   }else{
-    keep.push({...existing,...NA_FORCE_INCLUDE[0],id:417,atlasId:Number(existing.atlasId||3300200)});
+    keep.push({...existing,...NA_FORCE_INCLUDE[0]});
   }
   const cleaned=sanitizeRoster(keep).filter(r=>Number(r.id)!==83&&Number(r.id)!==152&&norm(r.name)!=='solomon');
   if(!cleaned.some(r=>Number(r.id)===417))cleaned.push({...NA_FORCE_INCLUDE[0]});
   state.roster=cleaned.sort((a,b)=>Number(a.id)-Number(b.id));
   PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
   fillFilters();renderAll();
-  $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+  $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isVisible).length} Servants`;
 }
 
 
@@ -241,6 +273,118 @@ function commandCards(d,r){
   return deck.sort((a,b)=>order[a]-order[b]);
 }
 function npIcon(){return `<img class="np-card-icon" src="${localAsset(IMG.np)}" alt="NP" loading="eager">`}
+function npCardCodeFromValue(v){const raw=String(v??'').trim().toUpperCase();if(raw==='1'||raw==='A'||raw==='ARTS')return'A';if(raw==='2'||raw==='B'||raw==='BUSTER')return'B';if(raw==='3'||raw==='Q'||raw==='QUICK')return'Q';return raw.includes('ARTS')?'A':raw.includes('BUSTER')?'B':raw.includes('QUICK')?'Q':''}
+function npCardCode(r,d=null){return npCardCodeFromValue(r?.cardType)||npCardCodeFromValue(d?.cardType)||npCardCodeFromValue(d?.noblePhantasms?.[0]?.card)||''}
+function collectEffectFlagTokens(value,out=[],insideFlags=false){if(value==null)return out;if(Array.isArray(value)){for(const v of value)collectEffectFlagTokens(v,out,insideFlags);return out;}if(typeof value==='string'){if(insideFlags)out.push(value);return out;}if(typeof value==='object'){for(const [k,v] of Object.entries(value)){if(k==='effectFlags'){collectEffectFlagTokens(v,out,true);continue;}if(insideFlags){if(v===true)out.push(k);else if(typeof v==='string')out.push(k,v);}if(v&&typeof v==='object')collectEffectFlagTokens(v,out,insideFlags);}}return out}
+function npEffectTypesFromDetail(d){const tokens=collectEffectFlagTokens(d);const types=new Set();for(const token of tokens){const x=String(token).replace(/[^a-zA-Z]/g,'').toLowerCase();if(x.includes('support'))types.add('Support');if(x.includes('attackenemyoneorall')){types.add('ST');types.add('AOE')}else if(x.includes('attackenemyall'))types.add('AOE');else if(x.includes('attackenemyone'))types.add('ST')}return NP_EFFECT_ORDER.filter(t=>types.has(t))}
+function npEntriesFromDetail(d){const raw=d?.noblePhantasms??d?.np??d?.noblePhantasm??[];if(Array.isArray(raw))return raw;if(raw&&typeof raw==='object')return Object.values(raw);return []}
+function npProfilesFromDetails(details,r){
+ const profiles=[];
+ for(const d of details){
+  if(!d)continue;
+  for(const np of npEntriesFromDetail(d)){
+   if(!np||typeof np!=='object')continue;
+   const card=npCardCodeFromValue(np.card)||npCardCodeFromValue(np.cardType)||npCardCodeFromValue(np.commandType)||npCardCodeFromValue(d?.cardType)||'';
+   const effects=npEffectTypesFromDetail(np);
+   if(card&&effects.length)profiles.push({card,types:effects});
+   else if(effects.length)profiles.push({card:'',types:effects});
+  }
+ }
+ if(!profiles.length){
+  const card=npCardCode(r,details[0]);
+  const effects=npEffectTypesFromDetail(details[0]||{});
+  if(card&&effects.length)profiles.push({card,types:effects});
+  else if(card)profiles.push({card,types:[]});
+  else if(effects.length)profiles.push({card:'',types:effects});
+ }
+ const seen=new Set();
+ return profiles.filter(p=>{const key=`${p.card}:${p.types.join(',')}`;if(seen.has(key))return false;seen.add(key);return true});
+}
+async function fetchVariantDetail(id){const key=Number(id);if(!key)return null;if(variantDetailCache.has(key))return variantDetailCache.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();return await res.json()}catch{return null}})();variantDetailCache.set(key,p);return p}
+function treeContainsId(value,wanted){
+  if(value==null)return false;
+  if(typeof value==='number')return wanted.has(Number(value));
+  if(typeof value==='string'){const n=Number(value);return Number.isFinite(n)&&wanted.has(n)}
+  if(Array.isArray(value))return value.some(v=>treeContainsId(v,wanted));
+  if(typeof value==='object')return Object.values(value).some(v=>treeContainsId(v,wanted));
+  return false;
+}
+function variantIsLinkedToPrimary(primaryDetail,primary,variantId,variantDetail){
+  const primaryId=Number(primary?.atlasId||primary?.id);
+  const collectionNo=Number(primary?.id);
+  const targetsPrimary=new Set([primaryId,collectionNo].filter(Number.isFinite));
+  const targetVariant=new Set([Number(variantId)].filter(Number.isFinite));
+  // Atlas exposes hidden/form relationships through svtChange. Prefer these explicit links.
+  if(treeContainsId(primaryDetail?.svtChange,targetVariant))return true;
+  if(treeContainsId(variantDetail?.svtChange,targetsPrimary))return true;
+  return false;
+}
+async function discoverNameVariants(r,primaryDetail){
+ const key=norm(r?.name);
+ if(!key)return [];
+ const cacheKey=`${Number(r?.id)}:${Number(r?.atlasId||0)}`;
+ if(atlasVariantsByName.has(cacheKey))return atlasVariantsByName.get(cacheKey)||[];
+ const known=[];
+ try{
+   const url=`https://api.atlasacademy.io/nice/NA/servant/search?name=${encodeURIComponent(r.name)}&lang=en&excludeCollectionNo=999999999`;
+   const res=await fetch(url,{cache:'force-cache'});
+   if(res.ok){
+     const raw=await res.json();
+     const arr=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);
+     const sameName=arr.filter(x=>norm(x?.name)===key&&Number(x?.id));
+     const primaryCount=sameName.filter(x=>Number(x?.collectionNo)>0).length;
+     for(const x of sameName){
+       const id=Number(x?.id),cn=Number(x?.collectionNo);
+       // Only collectionNo=0 can be an in-form/hidden variant. Do not merge another playable
+       // Servant with the same display name (e.g. Gilgamesh Archer/Caster or BB 4*/5*).
+       if(cn!==0||id===Number(r?.atlasId))continue;
+       const vd=await fetchVariantDetail(id);
+       // If the name uniquely identifies one playable record, a collectionNo=0 record is
+       // its hidden/form variant. When several playable records share the name, require
+       // Atlas's explicit svtChange relationship to avoid cross-version NP contamination.
+       const explicitlyLinked=variantIsLinkedToPrimary(primaryDetail,r,id,vd);
+       if(!explicitlyLinked && primaryCount!==1)continue;
+       if(!known.some(v=>Number(v.id)===id))known.push({id,name:x.name,collectionNo:0});
+     }
+   }
+ }catch(e){}
+ // Keep only variants from the lightweight export cache that are explicitly linked as well.
+ for(const v of (atlasVariantsByName.get(key)||[])){
+   if(Number(v?.collectionNo)!==0)continue;
+   if(known.some(x=>Number(x.id)===Number(v.id)))continue;
+   const vd=await fetchVariantDetail(v.id);
+   if(variantIsLinkedToPrimary(primaryDetail,r,Number(v.id),vd))known.push(v);
+ }
+ atlasVariantsByName.set(cacheKey,known);
+ return known;
+}
+async function npProfilesForServant(r,d){
+ const details=[d];
+ const variants=await discoverNameVariants(r,d);
+ for(const v of variants){if(Number(v.id)===Number(r?.atlasId))continue;const vd=await fetchVariantDetail(v.id);if(vd)details.push(vd)}
+ return npProfilesFromDetails(details,r);
+}
+function npFilterKeysFromProfiles(profiles){return profiles.flatMap(p=>p.types.map(t=>p.card?`${p.card}:${t}`:t))}
+function npProfileKeys(d,r){return npFilterKeysFromProfiles(npProfilesFromDetails([d],r))}
+function npTypeText(d,r){const profiles=npProfilesFromDetails([d],r);return profiles.length?profiles.map(p=>p.types.length?p.types.join(' · '):'Type non défini').join(' · '):'—'}
+function npProfilesHtml(profiles){if(!profiles.length)return '<span class="np-profile-empty">Type NP indisponible</span>';return `<div class="np-profile-list">${profiles.map(p=>`<div class="np-profile"><span class="np-profile-card">${p.card?cardImg(p.card):''}</span><span class="np-profile-types">${p.types.length?p.types.map(t=>`<b>${t}</b>`).join('<span class="np-profile-sep">·</span>'):''}</span></div>`).join('')}</div>`}
+function npCardsFromProfiles(profiles){return [...new Set((profiles||[]).map(p=>p?.card).filter(Boolean))]}
+function clearNpOverlayTimers(){for(const timer of npOverlayTimers.values())clearInterval(timer);npOverlayTimers.clear()}
+function setNpOverlayCards(holder,cards){
+ const id=holder?.dataset?.servantId;
+ if(id&&npOverlayTimers.has(id)){clearInterval(npOverlayTimers.get(id));npOverlayTimers.delete(id)}
+ if(!holder)return;
+ let overlay=holder.querySelector('.np-type-overlay');
+ if(!showNpOverlay||!cards.length){overlay?.remove();return}
+ if(!overlay){overlay=document.createElement('div');overlay.className='np-type-overlay';overlay.dataset.npOverlay=id;holder.appendChild(overlay)}
+ let index=0;
+ const paint=()=>{if(!overlay.isConnected||!showNpOverlay)return;const next=cardImg(cards[index]);overlay.classList.add('np-overlay-fade-out');setTimeout(()=>{if(!overlay.isConnected||!showNpOverlay)return;overlay.innerHTML=next;overlay.classList.remove('np-overlay-fade-out')},160);index=(index+1)%cards.length};
+ overlay.innerHTML=cardImg(cards[0]);
+ if(cards.length>1){const timer=setInterval(paint,1800);if(id)npOverlayTimers.set(id,timer)}
+}
+function npFilterKeys(r){const cached=npTypeCache.get(Number(r.id));if(!cached)return null;return cached.keys||[]}
+function matchesNpFilters(r){if(!selectedNpTypes.size)return true;const keys=npFilterKeys(r);return keys==null?true:keys.some(k=>selectedNpTypes.has(k))}
+async function ensureNpTypeIndex(){if(npTypeIndexPromise)return npTypeIndexPromise;const rows=state.roster.filter(isVisible).filter(r=>!npTypeCache.has(Number(r.id)));if(!rows.length)return;let cursor=0;npTypeIndexPromise=(async()=>{const workers=Array.from({length:6},async()=>{while(cursor<rows.length){const r=rows[cursor++];const d=await atlasDetail(r);const profiles=await npProfilesForServant(r,d);const keys=npFilterKeysFromProfiles(profiles);npTypeCache.set(Number(r.id),{profiles,keys});}});await Promise.all(workers)})().finally(()=>{npTypeIndexPromise=null});return npTypeIndexPromise}
 
 function levelIndex(detail,level){const growth=detail?.limits?.slice?.().sort((a,b)=>a.lvMax-b.lvMax)||[];let exact=growth.find(x=>Number(x.lvMax)>=level);return exact||growth[growth.length-1]}
 function statAt(detail,kind,level){if(!detail)return null;const arr=detail?.[kind+'Growth'];if(Array.isArray(arr)&&arr.length){const i=Math.max(0,Math.min(arr.length-1,level-1));return Number(arr[i])}const base=Number(detail?.[kind+'Base']),max=Number(detail?.[kind+'Max']),lvMax=Number(detail?.lvMax)||100;if(!Number.isFinite(base)||!Number.isFinite(max))return null;const t=Math.max(0,Math.min(1,(level-1)/(lvMax-1)));return Math.round(base+(max-base)*t)}
@@ -252,13 +396,13 @@ function bondDiamonds(bond,editable=false){
  return `<div class="bond-diamonds ${editable?'bond-editable':''}" id="bondDiamonds"><div class="bond-row bond-row-1">${row(0,10)}</div><div class="bond-row bond-row-2">${row(10,5)}</div></div><small class="bond-caption" id="bondCaption">Bond ${n||'—'} / 15${editable?' · cliquez sur un losange':''}</small>`;
 }
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
-function openModalBase(r,d,urls,idx,npTypeOverride=null){
+function openModalBase(r,d,urls,idx,profiles=[]){
  const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),owned=isOwned(currentPlayer,r),cards=commandCards(d,r);
  const art=urls[idx]||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
- const npType=npTypeOverride||extractNPCardType(d);const npTypeHtml=npType?`<div class="np-type-detail">${npTypeImg(npType)}<span>NP ${npType==='Q'?'Quick':npType==='A'?'Arts':'Buster'}</span></div>`:'';const npHtml=can?`<div class="np-edit-wrap">${npIcon()}<input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div>${npTypeHtml}`:`<div class="np-detail-row">${npIcon()}<b>${npRead}</b></div>${npTypeHtml}`;
+ const npProfileMarkup=npProfilesHtml(profiles);const npHtml=can?`<div class="np-edit-wrap np-two-row"><div class="np-topline">${npIcon()}<div class="np-value-line"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div></div><div class="np-types-row">${npProfileMarkup}</div></div>`:`<div class="np-detail-row np-two-row"><div class="np-topline">${npIcon()}<b>${npRead}</b></div><div class="np-types-row">${npProfileMarkup}</div></div>`;
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
@@ -276,7 +420,7 @@ function openModalBase(r,d,urls,idx,npTypeOverride=null){
 $('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
 }
 function idNormalize(id){return Number(id)}
-async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),npType=await npCardTypeForServant(r,d);openModalBase(r,d,urls,0,npType);}
+async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d);openModalBase(r,d,urls,0,profiles);}
 async function saveModal(id){
  const s=ensureStats(currentPlayer,id);
  s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));
@@ -516,72 +660,7 @@ async function persistStat(id){
  updateSync('Cloud · synchronisé');
  return true;
 }
-function renderCurrentView(){
-  if(currentView==='overview')renderOverview();
-  else if(currentView==='servants')renderRoster();
-  else if(currentView==='compare')renderCompare();
-  else if(currentView==='supports')renderSupports();
-  else if(currentView==='xp')renderXp();
-}
-let publicRefreshInFlight=null,lastPublicRefreshAt=0;
-function normalizeCloudServantId(rawId){
- const n=Number(rawId);
- if(!Number.isFinite(n)||n<=0)return null;
- const direct=state.roster.find(r=>Number(r.id)===n);
- if(direct)return Number(direct.id);
- const byAtlas=state.roster.find(r=>Number(r.atlasId)===n);
- return byAtlas?Number(byAtlas.id):n;
-}
-async function fetchPlayerStatsRows(player){
- const out=[];
- const pageSize=500;
- for(let from=0;;from+=pageSize){
-   const {data,error}=await cloud.from('chaldea_stats').select('*').eq('player_key',player).order('servant_id',{ascending:true}).range(from,from+pageSize-1);
-   if(error)throw error;
-   const batch=data||[]; out.push(...batch);
-   if(batch.length<pageSize)break;
- }
- return out;
-}
-async function refreshPublicStats({force=false}={}){
- if(!cloudEnabled||!cloud)return false;
- const now=Date.now();
- if(!force&&now-lastPublicRefreshAt<5000)return false;
- if(publicRefreshInFlight)return publicRefreshInFlight;
- publicRefreshInFlight=(async()=>{
-   try{
-     const batches=await Promise.all(PLAYERS.map(fetchPlayerStatsRows));
-     const data=batches.flat();
-     const latest=new Map();
-     for(const x of data){
-       const p=String(x?.player_key||'');
-       const id=normalizeCloudServantId(x?.servant_id);
-       if(!PLAYERS.includes(p)||!id)continue;
-       const key=`${p}:${id}`;
-       const old=latest.get(key);
-       const stamp=Date.parse(x?.updated_at||'')||0;
-       const oldStamp=Date.parse(old?.updated_at||'')||0;
-       if(!old||stamp>=oldStamp)latest.set(key,x);
-     }
-     let changed=false;
-     for(const [key,x] of latest){
-       const [p,idText]=key.split(':');
-       const id=Number(idText);
-       const ss=ensureStats(p,id);
-       const next={level:x.level??null,np:x.np??null,bond:x.bond??null,grail:x.grail??null,fouHp:x.fou_hp??null,fouAtk:x.fou_atk??null,servantCoins:x.servant_coins??null,skills:Array.isArray(x.skills)?x.skills.slice(0,3):[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills.slice(0,5):[null,null,null,null,null]};
-       if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}
-     }
-     lastPublicRefreshAt=Date.now();
-     if(changed){localCacheSave();renderCurrentView();}
-     return changed;
-   }catch(error){
-     updateSync('Supabase · lecture refusée',true);
-     console.warn('Supabase refresh:',error?.message||error);
-     return false;
-   }finally{publicRefreshInFlight=null;}
- })();
- return publicRefreshInFlight;
-}
+async function refreshPublicStats(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_stats').select('*');if(error){updateSync('Supabase · lecture refusée',true);return}let changed=false;for(const x of data||[]){const ss=ensureStats(x.player_key,x.servant_id);const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:x.skills||[null,null,null],appendSkills:x.append_skills||[null,null,null,null,null]};if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}}if(changed){localCacheSave();if(currentView==='overview')renderOverview();else if(currentView==='compare')renderCompare()}}
 async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
 async function saveAllToSupabase(){
  if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
@@ -597,7 +676,7 @@ async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit
 async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
 async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
 async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
-async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderCurrentView();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
+async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
 function showSeedBanner(){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{await seedCurrentPlayer();div.remove()};document.body.appendChild(div)}
 function updateEditVisibility(){$('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion'}
 async function resolveMembership(){if(!cloud||!session)return;const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',session.user.id).maybeSingle();if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync(error.code==='401'?'Supabase · clé/API refusée':'Supabase · lecture refusée',true);return}cloudAuthError='';currentAuth=data?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;/* Keep the user's currently selected Master. Authentication only controls edit rights. */if(data&&state.players[data.player_key])state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility()}
@@ -621,9 +700,7 @@ async function setupCloud(){
   cloud.auth.onAuthStateChange((_event,ses)=>{setTimeout(async()=>{session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
   // Realtime is optional. If the WebSocket is unavailable, keep the site functional and poll instead.
   if(CONFIG.enableRealtime===true){try{cloud.channel('chaldea-live').on('postgres_changes',{event:'*',schema:'public',table:'chaldea_stats'},()=>refreshPublicStats()).subscribe(()=>{});}catch(e){console.warn('Supabase Realtime disabled',e)}}
-  const refreshOnReturn=()=>{if(document.visibilityState==='visible')refreshPublicStats({force:true});};
-  window.addEventListener('focus',refreshOnReturn,{passive:true});
-  document.addEventListener('visibilitychange',refreshOnReturn,{passive:true});
+  setInterval(async()=>{if(document.visibilityState==='visible'&&cloudEnabled)await refreshPublicStats()},15000);
 }
 function accountUI(){
  const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
@@ -634,5 +711,5 @@ function accountUI(){
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
-$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};const toggleNp=$('#toggleNpOverlay');if(toggleNp)toggleNp.onclick=()=>{showNpOverlay=!showNpOverlay;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};
 localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
