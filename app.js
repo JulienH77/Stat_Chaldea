@@ -385,8 +385,9 @@ function costumeNameMap(d){
 }
 const FANDOM_API="https://fategrandorder.fandom.com/api.php";
 const fandomBattleCache=new Map();
+const fandomSpriteSetCache=new Map();
 function fandomFileTitle(filename){return `File:${String(filename||'').replace(/_/g,' ').trim()}`;}
-function fandomTitleKey(title){return String(title||'').replace(/_/g,' ').trim().toLowerCase();}
+function fandomTitleKey(title){return String(title||'').replace(/^File:/i,'').replace(/_/g,' ').trim().toLowerCase();}
 async function fandomResolveFiles(filenames){
   const unique=[...new Set((filenames||[]).filter(Boolean))];
   if(!unique.length)return new Map();
@@ -394,7 +395,7 @@ async function fandomResolveFiles(filenames){
   const missing=[];
   unique.forEach(name=>{
     const key=fandomTitleKey(fandomFileTitle(name));
-    if(fandomBattleCache.has(key)){result.set(name,fandomBattleCache.get(key));}
+    if(fandomBattleCache.has(key))result.set(name,fandomBattleCache.get(key));
     else missing.push(name);
   });
   if(!missing.length)return result;
@@ -431,11 +432,39 @@ async function fandomResolveFiles(filenames){
   }
   return result;
 }
+async function fandomCategoryFiles(categoryNames){
+  const names=[...new Set((categoryNames||[]).map(v=>String(v||'').trim()).filter(Boolean))];
+  for(const categoryName of names){
+    const files=[];
+    let cmcontinue=null;
+    let failed=false;
+    try{
+      do{
+        const params={action:'query',format:'json',origin:'*',list:'categorymembers',cmtitle:`Category:${categoryName.replace(/^Category:/i,'')}`,cmnamespace:'6',cmtype:'file',cmlimit:'max'};
+        if(cmcontinue)params.cmcontinue=cmcontinue;
+        const qs=new URLSearchParams(params);
+        const res=await fetch(`${FANDOM_API}?${qs.toString()}`,{cache:'force-cache'});
+        if(!res.ok)throw new Error(`Fandom API ${res.status}`);
+        const data=await res.json();
+        for(const item of (data?.query?.categorymembers||[])){
+          const title=String(item?.title||'').replace(/^File:/i,'').trim();
+          if(title)files.push(title);
+        }
+        cmcontinue=data?.continue?.cmcontinue||null;
+      }while(cmcontinue);
+    }catch(err){
+      failed=true;
+      console.warn(`Fandom sprite category failed for ${categoryName}`,err);
+    }
+    if(!failed&&files.length)return files;
+  }
+  return [];
+}
 function battleSpriteFileCandidates(collectionNo,kind,number){
   const code=`S${String(collectionNo).padStart(3,'0')}`;
   const label=kind==='stage'?`Stage${number}`:`Costume${number}`;
-  // Highest available Ver first. Some Servants use Ver1/2/3 while others have Ver4/5.
-  return [5,4,3,2,1].map(v=>`${code} Sprite Ver${v} ${label}.png`);
+  // Keep the proven V208 resolver as a fallback. Higher versions are preferred.
+  return [10,9,8,7,6,5,4,3,2,1].map(v=>`${code} Sprite Ver${v} ${label}.png`);
 }
 async function resolveHighestBattleSprite(collectionNo,kind,number){
   const candidates=battleSpriteFileCandidates(collectionNo,kind,number);
@@ -446,18 +475,83 @@ async function resolveHighestBattleSprite(collectionNo,kind,number){
   }
   return null;
 }
+function battleSpriteFilenameInfo(collectionNo,name){
+  const code=`S${String(collectionNo).padStart(3,'0')}`;
+  const re=new RegExp(`^${code} Sprite Ver(\\d+) (Stage|Costume)(\\d+)\\.png$`,'i');
+  const match=String(name||'').match(re);
+  if(!match)return null;
+  return {version:Number(match[1]),type:match[2].toLowerCase(),number:Number(match[3])};
+}
+function chooseHighestBattleSprites(collectionNo,files){
+  const best=new Map();
+  for(const file of (files||[])){
+    const name=typeof file==='string'?file:file?.name;
+    const url=typeof file==='string'?null:file?.url;
+    const info=battleSpriteFilenameInfo(collectionNo,name);
+    if(!info)continue;
+    const key=`${info.type}:${info.number}`;
+    const prev=best.get(key);
+    if(!prev||info.version>prev.version)best.set(key,{...(typeof file==='string'?{}:file),name, url, ...info});
+  }
+  return [...best.values()].sort((a,b)=>{
+    if(a.type!==b.type)return a.type==='stage'?-1:1;
+    return a.number-b.number;
+  });
+}
+function fandomSpriteCategoryCandidates(d,r){
+  const raw=[d?.name,r?.name,r?.servantName,r?.displayName,d?.profile?.name];
+  const out=[];
+  for(const value of raw){
+    const name=String(value||'').trim();
+    if(name&&!out.includes(`${name} Sprites`))out.push(`${name} Sprites`);
+  }
+  return out;
+}
+async function fandomListBattleSpriteFiles(collectionNo,d,r){
+  const code=`S${String(collectionNo).padStart(3,'0')}`;
+  const cacheKey=`${code}|${fandomSpriteCategoryCandidates(d,r).join('|')}`;
+  if(fandomSpriteSetCache.has(cacheKey))return fandomSpriteSetCache.get(cacheKey);
+  const p=(async()=>{
+    // First: Fandom's dedicated Servant sprite category. This catches every
+    // CostumeN, including gaps and costume numbers that aren't exposed by Atlas.
+    const categoryFiles=await fandomCategoryFiles(fandomSpriteCategoryCandidates(d,r));
+    const categoryBattle=categoryFiles.filter(name=>battleSpriteFilenameInfo(collectionNo,name));
+    if(categoryBattle.length){
+      const urls=await fandomResolveFiles(categoryBattle);
+      return categoryBattle.map(name=>({name,url:urls.get(name)||null})).filter(x=>x.url);
+    }
+
+    // Fallback: keep the proven exact-file resolver for base stages and a
+    // generous costume range. This preserves V208 even if the category API
+    // is unavailable or a Servant has an unusual Fandom category title.
+    const targets=[];
+    for(let stage=1;stage<=3;stage++)targets.push({type:'stage',number:stage});
+    const costumeCount=Math.max(30,costumeRecords(d).length+10);
+    for(let costume=1;costume<=costumeCount;costume++)targets.push({type:'costume',number:costume});
+    const hits=await Promise.all(targets.map(async t=>{
+      const hit=await resolveHighestBattleSprite(collectionNo,t.type,t.number);
+      return hit?{name:hit.filename,url:hit.url}:null;
+    }));
+    return hits.filter(Boolean);
+  })();
+  fandomSpriteSetCache.set(cacheKey,p);
+  return p;
+}
 async function battleSpriteEntries(d,r){
-  const collectionNo=Number(d?.collectionNo||r?.id);
+  const collectionNo=Number(d?.collectionNo||r?.collectionNo||r?.id);
   if(!Number.isFinite(collectionNo)||collectionNo<=0)return [];
-  const targets=[];
-  for(let stage=1;stage<=3;stage++)targets.push({kind:'combat-sprite',type:'stage',number:stage,key:String(stage),label:`Ascension ${stage}`});
-  const costumes=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
-  costumes.forEach((c,i)=>targets.push({kind:'costume-sprite',type:'costume',number:i+1,key:String(c?.costumeCollectionNo||c?.id||i+1),label:`${c?.name||c?.shortName||`Costume ${i+1}`} · Sprite`}));
-  const resolved=await Promise.all(targets.map(async target=>{
-    const hit=await resolveHighestBattleSprite(collectionNo,target.type,target.number);
-    return hit?{...target,url:hit.url,version:hit.version,sourceFile:hit.filename,group:'SPRITES'}:null;
-  }));
-  return resolved.filter(Boolean);
+  const files=await fandomListBattleSpriteFiles(collectionNo,d,r);
+  const selected=chooseHighestBattleSprites(collectionNo,files);
+  const names=costumeNameMap(d);
+  const costumeRecordsSorted=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
+  return selected.map(item=>{
+    if(item.type==='stage'){
+      return {kind:'combat-sprite',type:'stage',number:item.number,key:String(item.number),label:`Ascension ${item.number}`,group:'SPRITES',url:item.url,version:item.version,sourceFile:item.name};
+    }
+    const costumeRecord=costumeRecordsSorted[item.number-1];
+    const labelName=String(costumeRecord?.name||costumeRecord?.shortName||`Costume ${item.number}`);
+    return {kind:'costume-sprite',type:'costume',number:item.number,key:String(item.number),label:`${labelName} · Sprite`,group:'SPRITES',url:item.url,version:item.version,sourceFile:item.name};
+  });
 }
 function galleryImgHtml(item,alt='',loading='lazy'){
   const urls=[item?.url,...(Array.isArray(item?.fallbacks)?item.fallbacks:[])].filter(Boolean);
