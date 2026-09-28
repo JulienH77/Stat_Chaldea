@@ -75,7 +75,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 5,
+          "np": 43,
           "skills": [
             8,
             8,
@@ -222,7 +222,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 3,
+          "np": 4,
           "skills": [
             9,
             9,
@@ -2217,7 +2217,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 10,
+          "np": 12,
           "skills": [
             3,
             3,
@@ -2885,7 +2885,7 @@
         },
         "139": {
           "level": 90,
-          "bond": 2,
+          "bond": 5,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -4229,7 +4229,7 @@
         },
         "206": {
           "level": 90,
-          "bond": 0,
+          "bond": 2,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -6501,7 +6501,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 5,
+          "np": 25,
           "skills": [
             9,
             10,
@@ -6791,7 +6791,7 @@
         },
         "329": {
           "level": 90,
-          "bond": 0,
+          "bond": 3,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -8517,7 +8517,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 1,
+          "np": 5,
           "skills": [
             8,
             8,
@@ -8748,7 +8748,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 1,
+          "np": 13,
           "skills": [
             9,
             9,
@@ -8756,10 +8756,10 @@
           ],
           "appendSkills": [
             null,
+            7,
             null,
-            null,
-            null,
-            null
+            7,
+            7
           ],
           "servantCoins": null
         },
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-25T04:44:30.974Z"
+    "cloudSnapshotAt": "2026-09-28T15:36:06.830Z"
   }
 }
