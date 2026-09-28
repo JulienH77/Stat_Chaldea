@@ -57,6 +57,18 @@ Les moyennes des trois Skills suivent le même filtre ALL/GOLD.
 
 ---
 
+## Detail Servant
+
+La galerie du détail d’un Servant affiche :
+
+- les 4 ascensions ;
+- les splasharts des costumes, placés après les 4 ascensions ;
+- les 3 sprites de combat correspondant aux trois premières ascensions ;
+- les sprites de combat des costumes ;
+- les sprites de combat sont résolus via l’API MediaWiki de Fandom afin d’obtenir les URLs CDN directes des PNG, en sélectionnant la version `Ver` la plus élevée disponible.
+
+Les sélecteurs de galerie sont placés directement sous l’image principale. Les compteurs ne sont pas affichés sur ces sélecteurs.
+
 ## Servants
 
 Cet onglet constitue le catalogue principal.
@@ -707,3 +719,27 @@ Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient no
 ### Limitation volontaire du Destiny Order
 
 Le catalogue V200 contient les Servants NA courants mais ne stocke pas, dans `initial-state.json`, une métadonnée historique complète `limited / story-locked / permanent` ni une date de sortie par Servant. Les listes proposées par les sélecteurs Destiny Order sont donc construites à partir du roster 5★ NA courant, par classe, et ne constituent pas une reconstruction juridique des conditions d'éligibilité du jeu à la date historique de chaque bannière.
+
+# V203 — Galerie multi-assets
+
+La V203 étend la galerie du détail d'un Servant sans supprimer les quatre ascensions existantes.
+
+La galerie peut maintenant regrouper, lorsque les données Atlas Academy les fournissent :
+
+- **ASCENSIONS** : les quatre illustrations d'ascension habituelles ;
+- **SPRITES** : les `CharaFigure` du Servant ;
+- **COSTUMES** : pour chaque costume disponible, son splash art et son sprite lorsqu'ils sont exposés par les assets Atlas Academy ;
+- **NP** : les vidéos `.mp4` rattachées aux assets de type Movie/NP disponibles dans la réponse Atlas Academy. Cette catégorie n'est affichée que lorsqu'au moins une vidéo réellement référencée est disponible.
+
+Les catégories sont séparées par des onglets dans la galerie et les boutons de navigation restent limités à la catégorie active. Les vidéos NP ne sont pas lancées automatiquement : elles utilisent le lecteur natif avec contrôles.
+
+Atlas Academy documente notamment les assets `charaGraph` des quatre ascensions, les `charaFigure`, les assets de costumes et le pattern `movie` dans son schéma d'assets. citeturn798630view0turn275395view0turn246558view0
+
+
+### V206
+- Gallery: keep the V204 gallery buttons unchanged.
+- Remove the NP video tab completely.
+- `SPRITES` now targets the actual in-battle standing sprites: ascensions 1–3 only, plus one sprite per costume.
+- Atlas Academy remains the source of truth for the Servant and costume records, while the displayed PNGs use the extracted FGO in-battle sprite naming convention from Fandom (`Sxxx Sprite VerN Stage1/2/3` and `CostumeN`).
+- The gallery tries current extracted sprite versions first (Ver3, then Ver2/Ver1, with Ver4/Ver5 as fallback) so a missing file does not leave a broken thumbnail.
+- `spriteModel` is intentionally not inserted directly into `<img>`: Atlas exposes it as a Unity AssetBundle/manifest rather than a web-ready PNG, and FateViewer loads that bundle as a Unity `AssetBundle` and instantiates its `chr` GameObject.

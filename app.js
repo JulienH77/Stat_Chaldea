@@ -29,6 +29,8 @@ const state=structuredClone(initialState);
 state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',bondScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
+const galleryFallbackMap=new Map();
+let galleryFallbackSeq=0;
 const GSSR_LOCAL_KEY='chaldea-v200-gssr-choices';
 let gssrEventId='ann-2026',gssrChoices={};
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
@@ -350,12 +352,154 @@ async function syncRosterNA(){
 function normalizeClass(c){const s=String(c||'').toLowerCase().replace(/[^a-z]/g,'');const m={saber:'Saber',archer:'Archer',lancer:'Lancer',rider:'Rider',caster:'Caster',assassin:'Assassin',berserker:'Berserker',ruler:'Ruler',avenger:'Avenger',alterego:'Alter Ego',mooncancer:'Moon Cancer',foreigner:'Foreigner',pretender:'Pretender',shielder:'Shielder',beast:'Beast'};return m[s]||'Extra'}
 function atlasRarity(x){return Number(x.rarity)>=5?'SSR':Number(x.rarity)===4?'SR':Number(x.rarity)===3?'R':Number(x.rarity)===2?'UC':'C'}
 async function atlasDetail(r){const key=Number(r.atlasId||r.id);if(!key)return null;if(atlasFull.has(key))return atlasFull.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();const d=await res.json();atlasById.set(Number(key),d);if(d?.collectionNo!=null)atlasById.set(Number(d.collectionNo),d);return d}catch{return null}})();atlasFull.set(key,p);return p}
-function imageList(d){
-  if(!d?.extraAssets) return [];
-  const obj=d.extraAssets?.charaGraph?.ascension || {};
-  return Object.entries(obj).sort(([a],[b])=>Number(a)-Number(b)).map(([,v])=>v)
-    .filter(v=>typeof v==='string'&&/^https?:\/\//.test(v)).slice(0,4);
+function galleryHttpUrl(v){return typeof v==='string'&&/^https?:\/\//.test(v)?v:null}
+function collectGalleryUrls(value,path=[],out=[]){
+  if(typeof value==='string'){const url=galleryHttpUrl(value);if(url)out.push({url,path:path.join('.').toLowerCase()});return out}
+  if(Array.isArray(value)){value.forEach((v,i)=>collectGalleryUrls(v,[...path,String(i)],out));return out}
+  if(value&&typeof value==='object'){Object.entries(value).forEach(([k,v])=>collectGalleryUrls(v,[...path,k],out))}
+  return out
 }
+function galleryUnique(items){const seen=new Set();return items.filter(item=>{const key=String(item?.url||'');if(!key||seen.has(key))return false;seen.add(key);return true})}
+function costumeRecords(d){
+  const raw=d?.costume;
+  const list=Array.isArray(raw)?raw:Object.values(raw&&typeof raw==='object'?raw:{});
+  return list.filter(c=>Number(c?.costumeCollectionNo||0)>=11);
+}
+function costumeIds(c){return [c?.id,c?.battleCharaId,c?.costumeCollectionNo].map(Number).filter(Number.isFinite).map(String)}
+function galleryAssetEntries(block){
+  if(!block||typeof block!=='object')return [];
+  const out=[];
+  for(const [key,value] of Object.entries(block)){
+    const url=galleryHttpUrl(value);
+    if(url)out.push({key:String(key),url});
+  }
+  return out;
+}
+function costumeNameMap(d){
+  const map=new Map();
+  for(const c of costumeRecords(d)){
+    const name=String(c?.name||c?.shortName||'Costume');
+    [c?.id,c?.costumeCollectionNo,c?.battleCharaId].forEach(v=>{const n=Number(v);if(Number.isFinite(n))map.set(String(n),name);});
+  }
+  return map;
+}
+const FANDOM_API="https://fategrandorder.fandom.com/api.php";
+const fandomBattleCache=new Map();
+function fandomFileTitle(filename){return `File:${String(filename||'').replace(/_/g,' ').trim()}`;}
+function fandomTitleKey(title){return String(title||'').replace(/_/g,' ').trim().toLowerCase();}
+async function fandomResolveFiles(filenames){
+  const unique=[...new Set((filenames||[]).filter(Boolean))];
+  if(!unique.length)return new Map();
+  const result=new Map();
+  const missing=[];
+  unique.forEach(name=>{
+    const key=fandomTitleKey(fandomFileTitle(name));
+    if(fandomBattleCache.has(key)){result.set(name,fandomBattleCache.get(key));}
+    else missing.push(name);
+  });
+  if(!missing.length)return result;
+  const batchSize=45;
+  for(let start=0;start<missing.length;start+=batchSize){
+    const batch=missing.slice(start,start+batchSize);
+    try{
+      const qs=new URLSearchParams({
+        action:'query',format:'json',origin:'*',prop:'imageinfo',iiprop:'url',titles:batch.map(fandomFileTitle).join('|')
+      });
+      const res=await fetch(`${FANDOM_API}?${qs.toString()}`,{cache:'force-cache'});
+      if(!res.ok)throw new Error(`Fandom API ${res.status}`);
+      const data=await res.json();
+      const pages=Object.values(data?.query?.pages||{});
+      const byTitle=new Map();
+      pages.forEach(page=>{
+        const url=page?.imageinfo?.[0]?.url;
+        if(url)byTitle.set(fandomTitleKey(page.title),url);
+      });
+      batch.forEach(filename=>{
+        const key=fandomTitleKey(fandomFileTitle(filename));
+        const url=byTitle.get(key)||null;
+        fandomBattleCache.set(key,url);
+        result.set(filename,url);
+      });
+    }catch(err){
+      console.warn('Fandom imageinfo resolution failed',err);
+      batch.forEach(filename=>{
+        const key=fandomTitleKey(fandomFileTitle(filename));
+        fandomBattleCache.set(key,null);
+        result.set(filename,null);
+      });
+    }
+  }
+  return result;
+}
+function battleSpriteFileCandidates(collectionNo,kind,number){
+  const code=`S${String(collectionNo).padStart(3,'0')}`;
+  const label=kind==='stage'?`Stage${number}`:`Costume${number}`;
+  // Highest available Ver first. Some Servants use Ver1/2/3 while others have Ver4/5.
+  return [5,4,3,2,1].map(v=>`${code} Sprite Ver${v} ${label}.png`);
+}
+async function resolveHighestBattleSprite(collectionNo,kind,number){
+  const candidates=battleSpriteFileCandidates(collectionNo,kind,number);
+  const urls=await fandomResolveFiles(candidates);
+  for(const filename of candidates){
+    const url=urls.get(filename);
+    if(url)return {url,filename,version:Number(filename.match(/ Sprite Ver(\d+) /)?.[1]||0)};
+  }
+  return null;
+}
+async function battleSpriteEntries(d,r){
+  const collectionNo=Number(d?.collectionNo||r?.id);
+  if(!Number.isFinite(collectionNo)||collectionNo<=0)return [];
+  const targets=[];
+  for(let stage=1;stage<=3;stage++)targets.push({kind:'combat-sprite',type:'stage',number:stage,key:String(stage),label:`Ascension ${stage}`});
+  const costumes=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
+  costumes.forEach((c,i)=>targets.push({kind:'costume-sprite',type:'costume',number:i+1,key:String(c?.costumeCollectionNo||c?.id||i+1),label:`${c?.name||c?.shortName||`Costume ${i+1}`} · Sprite`}));
+  const resolved=await Promise.all(targets.map(async target=>{
+    const hit=await resolveHighestBattleSprite(collectionNo,target.type,target.number);
+    return hit?{...target,url:hit.url,version:hit.version,sourceFile:hit.filename,group:'SPRITES'}:null;
+  }));
+  return resolved.filter(Boolean);
+}
+function galleryImgHtml(item,alt='',loading='lazy'){
+  const urls=[item?.url,...(Array.isArray(item?.fallbacks)?item.fallbacks:[])].filter(Boolean);
+  if(!urls.length)return '';
+  const key=`gallery-${++galleryFallbackSeq}`;
+  galleryFallbackMap.set(key,urls.slice(1));
+  return `<img src="${esc(urls[0])}" alt="${esc(alt)}" loading="${loading}" data-gallery-fallback="${key}">`;
+}
+function bindGalleryImageFallbacks(root=document){
+  root.querySelectorAll?.('img[data-gallery-fallback]').forEach(img=>{
+    if(img.dataset.galleryFallbackBound==='1')return;
+    img.dataset.galleryFallbackBound='1';
+    img.addEventListener('error',()=>{
+      const key=img.dataset.galleryFallback, list=galleryFallbackMap.get(key)||[];
+      const next=list.shift();
+      if(next){img.src=next;return;}
+      galleryFallbackMap.delete(key);
+    });
+  });
+}
+function galleryItems(d,r){
+  const ea=d?.extraAssets||{};
+  const items=[];
+  const pushMany=(entries,kind,group,makeLabel)=>entries.forEach((x,i)=>items.push({kind,url:x.url,key:x.key,label:makeLabel(x,i),group}));
+
+  // Spirit Origin splash arts: 4 ascensions first, then costume splash arts.
+  const asc=galleryAssetEntries(ea?.charaGraph?.ascension)
+    .sort((a,b)=>Number(a.key)-Number(b.key))
+    .filter(x=>Number(x.key)>=1&&Number(x.key)<=4)
+    .slice(0,4);
+  pushMany(asc,'ascension','ASCENSIONS',(_,i)=>`Ascension ${i+1}`);
+
+  const names=costumeNameMap(d);
+  const costumeGraphs=galleryAssetEntries(ea?.charaGraphEx?.costume||ea?.charaGraph?.costume)
+    .sort((a,b)=>Number(a.key)-Number(b.key));
+  costumeGraphs.forEach((x)=>items.push({kind:'costume-splash',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Splash`,group:'ASCENSIONS'}));
+
+  // Battle sprites are resolved asynchronously from Fandom's MediaWiki API in openServant().
+  // They are intentionally kept out of this synchronous gallery builder.
+  return items;
+}
+function imageList(d){return galleryItems(d,null).filter(x=>x.kind==='ascension').map(x=>x.url)}
 function commandCards(d,r){
   const arr=Array.isArray(d?.cards)?d.cards:[];
   const code=v=>{
@@ -494,9 +638,17 @@ function bondDiamonds(bond,editable=false){
  return `<div class="bond-diamonds ${editable?'bond-editable':''}" id="bondDiamonds"><div class="bond-row bond-row-1">${row(0,10)}</div><div class="bond-row bond-row-2">${row(10,5)}</div></div><small class="bond-caption" id="bondCaption">Bond ${n||'—'} / 15${editable?' · cliquez sur un losange':''}</small>`;
 }
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
-function openModalBase(r,d,urls,idx,profiles=[]){
+function galleryItemsWithBattleItems(d,r,battleItems){
+  const all=galleryItems(d,r);
+  const withoutSprites=all.filter(x=>x.group!=='SPRITES');
+  return [...withoutSprites,...(Array.isArray(battleItems)?battleItems:[])];
+}
+function openModalBase(r,d,urls,idx,profiles=[],battleItems=null){
  const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),owned=isOwned(currentPlayer,r),cards=commandCards(d,r);
- const art=urls[idx]||guessImage(r.atlasId)||'';
+ const gallery=battleItems ? galleryItemsWithBattleItems(d,r,battleItems) : galleryItems(d,r),fallbackAsc=urls.length?urls.map((url,i)=>({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'})):[];
+ const galleryItemsAll=gallery.length?gallery:fallbackAsc;
+ const initialItem=Math.max(0,Math.min(galleryItemsAll.length-1,Number(idx)||0));
+ const art=galleryItemsAll[initialItem]?.url||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
@@ -505,9 +657,44 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art">${art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="art-strip" id="artStrip">${urls.map((u,i)=>`<button class="art-thumb ${i===idx?'active':''}" data-art="${i}"><img src="${u}" alt=""></button>`).join('')}</div><div class="art-controls"><button id="artPrev">←</button><span id="artCounter">${urls.length?`${idx+1} / ${urls.length}`:'0 art'}</span><button id="artNext">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ const groupCounts={};galleryItemsAll.forEach(g=>{groupCounts[g.group]=(groupCounts[g.group]||0)+1});
+ const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES']].filter(([key])=>groupCounts[key]);
+ const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
+ const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}</button>`).join('');
+ const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${galleryImgHtml(x.item,'')}</button>`).join('');
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${art?galleryImgHtml(galleryItemsAll[initialItem],r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" '):'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ bindGalleryImageFallbacks($('#modal'));
  $('#modalCancel').onclick=closeModal;
- let current=idx;function show(i){if(!urls.length)return;current=(i+urls.length)%urls.length;if($('#detailMainImg'))$('#detailMainImg').src=urls[current];$('#artCounter').textContent=`${current+1} / ${urls.length}`;$$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',j===current))}$('#artPrev').onclick=()=>show(current-1);$('#artNext').onclick=()=>show(current+1);$$('.art-thumb').forEach(b=>b.onclick=()=>show(Number(b.dataset.art)));
+ let currentIndex=initialItem,currentGroup=initialGroup;
+ function itemsForGroup(group){return galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group)}
+ function paint(i){
+   const scoped=itemsForGroup(currentGroup);if(!scoped.length)return;
+   const pos=(i+scoped.length)%scoped.length;const entry=scoped[pos];currentIndex=entry.i;
+   const holder=$('#detailMainArt');if(!holder)return;
+   const item=entry.item;
+   holder.className=`detail-main-art gallery-kind-${item.kind}`;
+   holder.innerHTML=galleryImgHtml(item,r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" ');
+   bindGalleryImageFallbacks($('#detailMainArt'));
+   const counter=$('#artCounter');if(counter)counter.textContent=`${pos+1} / ${scoped.length}`;
+   $$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',Number(b.dataset.art)===entry.i));
+ }
+ function renderGroup(group,preferredIndex=0){
+   currentGroup=group;const scoped=itemsForGroup(group);if(!scoped.length)return;
+   const local=Math.max(0,scoped.findIndex(x=>x.i===preferredIndex));
+   const entry=scoped[local];currentIndex=entry.i;
+   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${galleryImgHtml(x.item,'')}</button>`).join('');
+   bindGalleryImageFallbacks($('#artStrip'));
+   $('#artCounter').textContent=`${local+1} / ${scoped.length}`;
+   $$('.gallery-group-tab').forEach(b=>b.classList.toggle('active',b.dataset.galleryGroup===group));
+   const item=entry.item;const holder=$('#detailMainArt');holder.className=`detail-main-art gallery-kind-${item.kind}`;
+   holder.innerHTML=galleryImgHtml(item,r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" ');
+   bindGalleryImageFallbacks($('#detailMainArt'));
+   $$('.art-thumb').forEach(b=>b.onclick=()=>{const hit=galleryItemsAll.findIndex((x,j)=>j===Number(b.dataset.art));if(hit>=0)paint(itemsForGroup(currentGroup).findIndex(x=>x.i===hit))});
+ }
+ $('#artPrev').onclick=()=>{const scoped=itemsForGroup(currentGroup);if(scoped.length){const pos=scoped.findIndex(x=>x.i===currentIndex);paint(pos-1)}};
+ $('#artNext').onclick=()=>{const scoped=itemsForGroup(currentGroup);if(scoped.length){const pos=scoped.findIndex(x=>x.i===currentIndex);paint(pos+1)}};
+ $$('.gallery-group-tab').forEach(b=>b.onclick=()=>renderGroup(b.dataset.galleryGroup, currentIndex));
+ $$('.art-thumb').forEach(b=>b.onclick=()=>{const scoped=itemsForGroup(currentGroup);const hit=Number(b.dataset.art);const pos=scoped.findIndex(x=>x.i===hit);if(pos>=0)paint(pos)});
  if(can){
    const bondInput=$('#e-bond'), bondCaption=$('#bondCaption');
    let bondHoverTimer=null;
@@ -516,10 +703,10 @@ function openModalBase(r,d,urls,idx,profiles=[]){
    btn.onmouseleave=()=>{clearTimeout(bondHoverTimer);bondHoverTimer=setTimeout(()=>$$('[data-bond]').forEach(x=>x.classList.remove('hovered')),220);};
    btn.onclick=()=>{const value=Number(btn.dataset.bond);bondInput.value=value;$$('[data-bond]').forEach(x=>x.classList.toggle('filled',Number(x.dataset.bond)<=value));if(bondCaption)bondCaption.textContent=`Bond ${value} / 15 · cliquez sur un losange`;};
  });
-$('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
+ $('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
 }
 function idNormalize(id){return Number(id)}
-async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d);openModalBase(r,d,urls,0,profiles);}
+async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d),battleItems=await battleSpriteEntries(d,r);openModalBase(r,d,urls,0,profiles,battleItems);bindGalleryImageFallbacks($('#modal'));}
 async function saveModal(id){
  const s=ensureStats(currentPlayer,id);
  s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));
@@ -805,6 +992,7 @@ function accountUI(){
  const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
  $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${session.user.email}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${cloudAuthError}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte Julien</b><span>Utilise cette action uniquement si ce compte doit devenir le compte Julien.</span><button class="save" id="claimJulien">Associer à Julien</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email"><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe"></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
  $('#modalBackdrop').classList.add('open');
+ bindGalleryImageFallbacks($('#modal'));
  $('#modalCancel').onclick=closeModal;
  if(logged&&missing){$('#claimJulien').onclick=claimJulien}else if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{await cloud.auth.signOut();session=null;currentAuth=null;cloudAuthError='';updateSync('Cloud · lecture publique');renderAll();closeModal()}}
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
