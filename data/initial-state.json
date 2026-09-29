@@ -2093,9 +2093,9 @@
           "fouAtk": 0,
           "np": 4,
           "skills": [
-            6,
             7,
-            6
+            7,
+            7
           ],
           "appendSkills": [
             null,
@@ -2933,9 +2933,9 @@
           "fouAtk": 0,
           "np": 5,
           "skills": [
-            6,
-            6,
-            6
+            9,
+            9,
+            9
           ],
           "appendSkills": [
             4,
@@ -7805,9 +7805,9 @@
           "fouAtk": 0,
           "np": 4,
           "skills": [
-            6,
-            6,
-            6
+            7,
+            7,
+            7
           ],
           "appendSkills": [
             null,
@@ -8246,9 +8246,9 @@
           "fouAtk": 0,
           "np": 5,
           "skills": [
-            6,
-            6,
-            6
+            9,
+            9,
+            9
           ],
           "appendSkills": [
             4,
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-28T21:22:04.088Z"
+    "cloudSnapshotAt": "2026-09-29T01:04:18.230Z"
   }
 }
