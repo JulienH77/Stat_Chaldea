@@ -2219,9 +2219,9 @@
           "fouAtk": 0,
           "np": 12,
           "skills": [
-            3,
-            3,
-            3
+            7,
+            7,
+            7
           ],
           "appendSkills": [
             1,
@@ -6791,7 +6791,7 @@
         },
         "329": {
           "level": 90,
-          "bond": 3,
+          "bond": 4,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-29T01:04:18.230Z"
+    "cloudSnapshotAt": "2026-09-29T06:49:06.963Z"
   }
 }
