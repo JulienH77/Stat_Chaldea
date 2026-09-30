@@ -1,0 +1,4 @@
+# Private local files
+chaldea-expenses-private-seed.sql
+*.bak
+*.bak2
