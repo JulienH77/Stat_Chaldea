@@ -3834,7 +3834,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 6,
+          "np": 7,
           "skills": [
             9,
             9,
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-30T07:22:04.561Z"
+    "cloudSnapshotAt": "2026-09-30T09:11:13.990Z"
   }
 }
