@@ -4921,9 +4921,9 @@
           "servantCoins": 20
         },
         "239": {
-          "level": 118,
-          "bond": 11,
-          "grail": 14,
+          "level": 120,
+          "bond": 12,
+          "grail": 15,
           "fouHp": 1000,
           "fouAtk": 1000,
           "np": 5,
@@ -8387,7 +8387,7 @@
         },
         "406": {
           "level": 90,
-          "bond": 5,
+          "bond": 6,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-10-01T14:47:42.280Z"
+    "cloudSnapshotAt": "2026-10-01T19:53:56.513Z"
   }
 }
