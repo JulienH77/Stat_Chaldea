@@ -233,7 +233,7 @@
             null,
             null,
             null,
-            null
+            4
           ],
           "servantCoins": 85
         },
@@ -1535,7 +1535,7 @@
             4,
             4,
             null,
-            null
+            4
           ],
           "servantCoins": null
         },
@@ -2941,7 +2941,7 @@
             4,
             4,
             4,
-            null,
+            4,
             null
           ],
           "servantCoins": 25
@@ -3421,11 +3421,11 @@
             10
           ],
           "appendSkills": [
+            8,
+            8,
             null,
-            null,
-            null,
-            null,
-            null
+            8,
+            8
           ],
           "servantCoins": 30
         },
@@ -3736,11 +3736,11 @@
             9
           ],
           "appendSkills": [
+            4,
+            4,
             null,
-            null,
-            null,
-            null,
-            null
+            4,
+            4
           ],
           "servantCoins": 25
         },
@@ -3845,7 +3845,7 @@
             4,
             null,
             null,
-            null
+            4
           ],
           "servantCoins": 85
         },
@@ -5668,7 +5668,7 @@
             10
           ],
           "appendSkills": [
-            null,
+            3,
             null,
             null,
             10,
@@ -5941,11 +5941,11 @@
             9
           ],
           "appendSkills": [
+            4,
+            4,
             null,
-            null,
-            null,
-            null,
-            null
+            4,
+            4
           ],
           "servantCoins": 30
         },
@@ -7183,8 +7183,8 @@
             4,
             4,
             4,
-            1,
-            null
+            4,
+            4
           ],
           "servantCoins": null
         },
@@ -8191,8 +8191,8 @@
             null,
             4,
             null,
-            null,
-            3
+            4,
+            4
           ],
           "servantCoins": null
         },
@@ -8401,7 +8401,7 @@
             null,
             null,
             null,
-            null,
+            4,
             null
           ],
           "servantCoins": null
@@ -8714,9 +8714,9 @@
           ],
           "appendSkills": [
             null,
+            1,
             null,
-            null,
-            null,
+            1,
             null
           ],
           "servantCoins": null
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-10-02T08:55:57.225Z"
+    "cloudSnapshotAt": "2026-10-02T14:58:48.274Z"
   }
 }
