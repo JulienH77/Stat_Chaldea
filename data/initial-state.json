@@ -8765,7 +8765,7 @@
         },
         "426": {
           "level": 90,
-          "bond": 0,
+          "bond": 2,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -31127,6 +31127,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-10-08T14:44:16.239Z"
+    "cloudSnapshotAt": "2026-10-08T20:11:19.359Z"
   }
 }
