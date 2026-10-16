@@ -6748,16 +6748,16 @@
           "servantCoins": null
         },
         "327": {
-          "level": null,
-          "bond": null,
-          "grail": null,
-          "fouHp": null,
-          "fouAtk": null,
-          "np": null,
+          "level": 90,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": 1,
           "skills": [
-            null,
-            null,
-            null
+            8,
+            8,
+            9
           ],
           "appendSkills": [
             null,
@@ -31127,6 +31127,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-10-16T05:38:33.369Z"
+    "cloudSnapshotAt": "2026-10-16T10:05:53.868Z"
   }
 }
