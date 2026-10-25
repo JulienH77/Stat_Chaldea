@@ -2,7 +2,7 @@
   "version": 2,
   "source": "Rayshift public API",
   "region": "NA",
-  "updatedAt": "2026-10-24T20:43:32.100Z",
+  "updatedAt": "2026-10-25T04:35:15.614Z",
   "players": {
     "julien": {
       "code": "939739133",
@@ -63,9 +63,9 @@
     "attmann": {
       "code": "921819502",
       "name": "Seph",
-      "lastUpdate": 1792808039,
-      "lastLogin": 1792807651,
-      "guid": "3d8d96bf-be5a-4586-b415-e23b17a5af51",
+      "lastUpdate": 1792896615,
+      "lastLogin": 1792895523,
+      "guid": "9f567298-f4bd-43b9-ba84-b9f30eb5aa45",
       "decksPresent": [
         1,
         2,
@@ -75,16 +75,16 @@
         32
       ],
       "decks": {
-        "0": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/1/1.png",
-        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/8/1.png"
+        "0": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/8/1.png"
       },
       "deckImages": {
-        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/1/9.png",
-        "2": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/2/9.png",
-        "4": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/4/9.png",
-        "8": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/8/9.png",
-        "16": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/16/9.png",
-        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/3d8d96bf-be5a-4586-b415-e23b17a5af51/32/9.png"
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/9f567298-f4bd-43b9-ba84-b9f30eb5aa45/32/9.png"
       },
       "message": "ok"
     }
