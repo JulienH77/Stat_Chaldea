@@ -8660,10 +8660,10 @@
         },
         "421": {
           "level": 120,
-          "bond": 8,
+          "bond": 9,
           "grail": 15,
-          "fouHp": 300,
-          "fouAtk": 300,
+          "fouHp": 600,
+          "fouAtk": 620,
           "np": 4,
           "skills": [
             10,
@@ -31127,6 +31127,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-11-06T09:56:00.041Z"
+    "cloudSnapshotAt": "2026-11-06T17:08:42.574Z"
   }
 }
