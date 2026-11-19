@@ -8784,6 +8784,27 @@
           ],
           "servantCoins": null
         },
+        "428": {
+          "level": 80,
+          "bond": 0,
+          "grail": 0,
+          "fouHp": 0,
+          "fouAtk": 0,
+          "np": null,
+          "skills": [
+            4,
+            4,
+            4
+          ],
+          "appendSkills": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "servantCoins": null
+        },
         "432": {
           "level": 100,
           "bond": 5,
@@ -31127,6 +31148,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-11-19T08:22:58.407Z"
+    "cloudSnapshotAt": "2026-11-19T17:28:22.960Z"
   }
 }
